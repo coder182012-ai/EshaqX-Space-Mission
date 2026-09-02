@@ -1,0 +1,1251 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>EshaqX Space Mission</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <!-- =====================================================
+         LOADING SCREEN
+    ====================================================== -->
+
+    <div id="loading-screen">
+
+        <div class="loading-content">
+
+            <div class="loading-logo">
+                ESHAQX
+            </div>
+
+            <div class="loading-title">
+                SPACE MISSION
+            </div>
+
+            <div class="loading-line">
+                INITIALIZING FLIGHT SYSTEMS...
+            </div>
+
+            <div class="loading-progress">
+                <div id="loading-progress-bar"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         MAIN APPLICATION
+    ====================================================== -->
+
+    <div id="app">
+
+
+        <!-- =================================================
+             TOP BAR
+        ================================================== -->
+
+        <header id="top-bar">
+
+            <div class="brand">
+
+                <div class="brand-main">
+                    ESHAQX
+                </div>
+
+                <div class="brand-sub">
+                    SPACE MISSION
+                </div>
+
+            </div>
+
+
+            <div id="current-mode">
+                SOLAR SYSTEM
+            </div>
+
+
+            <div class="top-actions">
+
+                <button id="pause-button"
+                        class="top-button">
+                    PAUSE
+                </button>
+
+                <button id="settings-button"
+                        class="top-button">
+                    SETTINGS
+                </button>
+
+            </div>
+
+        </header>
+
+
+        <!-- =================================================
+             3D CANVAS
+        ================================================== -->
+
+        <main id="three-container"></main>
+
+
+        <!-- =================================================
+             LEFT NAVIGATION
+        ================================================== -->
+
+        <aside id="left-panel">
+
+            <button class="nav-button active"
+                    data-section="solar-system">
+
+                <span>☀</span>
+                <span>Solar System</span>
+
+            </button>
+
+
+            <button class="nav-button"
+                    data-section="planet-explorer">
+
+                <span>◎</span>
+                <span>Planet Explorer</span>
+
+            </button>
+
+
+            <button class="nav-button"
+                    data-section="rocket-builder">
+
+                <span>△</span>
+                <span>Rocket Builder</span>
+
+            </button>
+
+
+            <button class="nav-button"
+                    data-section="missions">
+
+                <span>◆</span>
+                <span>Missions</span>
+
+            </button>
+
+
+            <button class="nav-button"
+                    data-section="station">
+
+                <span>▣</span>
+                <span>Space Station</span>
+
+            </button>
+
+
+            <button class="nav-button"
+                    data-section="flight">
+
+                <span>🚀</span>
+                <span>Flight</span>
+
+            </button>
+
+
+            <div class="nav-separator"></div>
+
+
+            <button class="nav-button"
+                    data-section="theories">
+
+                <span>?</span>
+                <span>Space Theories</span>
+
+            </button>
+
+        </aside>
+
+
+        <!-- =================================================
+             SOLAR SYSTEM INFORMATION
+        ================================================== -->
+
+        <section id="solar-system-panel"
+                 class="interface-panel">
+
+            <div class="panel-header">
+
+                <div>
+
+                    <div class="panel-title">
+                        SOLAR SYSTEM
+                    </div>
+
+                    <div class="panel-subtitle">
+                        3D EXPLORATION MODE
+                    </div>
+
+                </div>
+
+                <button class="close-panel">
+                    ×
+                </button>
+
+            </div>
+
+
+            <div class="panel-body">
+
+                <p>
+                    Explore the Sun, planets and Moon.
+                    Click a celestial body to inspect
+                    its scientific information.
+                </p>
+
+
+                <div class="time-controls">
+
+                    <button data-speed="0">
+                        PAUSE
+                    </button>
+
+                    <button data-speed="1">
+                        1×
+                    </button>
+
+                    <button data-speed="5">
+                        5×
+                    </button>
+
+                    <button data-speed="20">
+                        20×
+                    </button>
+
+                    <button data-speed="100">
+                        100×
+                    </button>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =================================================
+             PLANET INFORMATION
+        ================================================== -->
+
+        <section id="planet-panel"
+                 class="interface-panel planet-panel">
+
+            <div class="panel-header">
+
+                <div>
+
+                    <div id="planet-name"
+                         class="panel-title">
+                        EARTH
+                    </div>
+
+                    <div id="planet-type"
+                         class="panel-subtitle">
+                        TERRESTRIAL PLANET
+                    </div>
+
+                </div>
+
+                <button id="planet-close"
+                        class="close-panel">
+                    ×
+                </button>
+
+            </div>
+
+
+            <div id="planet-info"
+                 class="panel-body">
+
+                <p id="planet-description">
+                    Select a celestial body.
+                </p>
+
+
+                <div class="planet-stats">
+
+                    <div class="planet-stat">
+                        <span>DIAMETER</span>
+                        <strong id="planet-diameter">—</strong>
+                    </div>
+
+                    <div class="planet-stat">
+                        <span>MASS</span>
+                        <strong id="planet-mass">—</strong>
+                    </div>
+
+                    <div class="planet-stat">
+                        <span>GRAVITY</span>
+                        <strong id="planet-gravity">—</strong>
+                    </div>
+
+                    <div class="planet-stat">
+                        <span>DISTANCE</span>
+                        <strong id="planet-distance">—</strong>
+                    </div>
+
+                    <div class="planet-stat">
+                        <span>ROTATION</span>
+                        <strong id="planet-rotation">—</strong>
+                    </div>
+
+                    <div class="planet-stat">
+                        <span>ORBIT</span>
+                        <strong id="planet-orbit">—</strong>
+                    </div>
+
+                    <div class="planet-stat">
+                        <span>TEMPERATURE</span>
+                        <strong id="planet-temperature">—</strong>
+                    </div>
+
+                    <div class="planet-stat">
+                        <span>MOONS</span>
+                        <strong id="planet-moons">—</strong>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =================================================
+             ROCKET BUILDER
+        ================================================== -->
+
+        <section id="rocket-builder-panel"
+                 class="large-panel">
+
+            <div class="large-panel-header">
+
+                <div>
+
+                    <h1>
+                        ROCKET BUILDER
+                    </h1>
+
+                    <p>
+                        BUILD YOUR SPACECRAFT
+                    </p>
+
+                </div>
+
+                <button class="close-large-panel">
+                    ×
+                </button>
+
+            </div>
+
+
+            <div class="builder-layout">
+
+
+                <!-- PART LIBRARY -->
+
+                <div class="parts-library">
+
+                    <h2>
+                        ROCKET PARTS
+                    </h2>
+
+
+                    <button class="part-button"
+                            data-part="nose">
+
+                        NOSE CONE
+
+                    </button>
+
+
+                    <button class="part-button"
+                            data-part="capsule">
+
+                        COMMAND CAPSULE
+
+                    </button>
+
+
+                    <button class="part-button"
+                            data-part="fuel-small">
+
+                        SMALL FUEL TANK
+
+                    </button>
+
+
+                    <button class="part-button"
+                            data-part="fuel-large">
+
+                        LARGE FUEL TANK
+
+                    </button>
+
+
+                    <button class="part-button"
+                            data-part="engine">
+
+                        MAIN ENGINE
+
+                    </button>
+
+
+                    <button class="part-button"
+                            data-part="vacuum-engine">
+
+                        VACUUM ENGINE
+
+                    </button>
+
+
+                    <button class="part-button"
+                            data-part="booster">
+
+                        SOLID BOOSTER
+
+                    </button>
+
+
+                    <button class="part-button"
+                            data-part="decoupler">
+
+                        DECOUPLER
+
+                    </button>
+
+
+                    <button class="part-button"
+                            data-part="heatshield">
+
+                        HEAT SHIELD
+
+                    </button>
+
+
+                    <button class="part-button"
+                            data-part="landing-legs">
+
+                        LANDING LEGS
+
+                    </button>
+
+
+                    <button class="part-button"
+                            data-part="parachute">
+
+                        PARACHUTE
+
+                    </button>
+
+
+                    <button class="part-button"
+                            data-part="rcs">
+
+                        RCS THRUSTERS
+
+                    </button>
+
+
+                    <button class="part-button"
+                            data-part="solar-panel">
+
+                        SOLAR PANEL
+
+                    </button>
+
+
+                    <button class="part-button"
+                            data-part="antenna">
+
+                        COMMUNICATION ANTENNA
+
+                    </button>
+
+
+                    <button class="part-button"
+                            data-part="docking-port">
+
+                        DOCKING PORT
+
+                    </button>
+
+                </div>
+
+
+                <!-- ROCKET ASSEMBLY -->
+
+                <div class="rocket-assembly">
+
+                    <div class="assembly-title">
+                        VEHICLE ASSEMBLY
+                    </div>
+
+
+                    <div id="rocket-builder-view">
+
+                        <div id="builder-rocket">
+
+                            <!-- Parts generated by app.js -->
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="assembly-controls">
+
+                        <button id="clear-rocket"
+                                class="danger-button">
+
+                            CLEAR
+
+                        </button>
+
+
+                        <button id="save-rocket"
+                                class="secondary-button">
+
+                            SAVE DESIGN
+
+                        </button>
+
+
+                        <button id="launch-rocket"
+                                class="launch-button">
+
+                            PREPARE LAUNCH
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ROCKET DATA -->
+
+                <div class="vehicle-data">
+
+                    <h2>
+                        VEHICLE DATA
+                    </h2>
+
+
+                    <div class="data-row">
+                        <span>PARTS</span>
+                        <strong id="vehicle-parts">0</strong>
+                    </div>
+
+
+                    <div class="data-row">
+                        <span>STAGES</span>
+                        <strong id="vehicle-stages">0</strong>
+                    </div>
+
+
+                    <div class="data-row">
+                        <span>MASS</span>
+                        <strong id="vehicle-mass">0 t</strong>
+                    </div>
+
+
+                    <div class="data-row">
+                        <span>FUEL</span>
+                        <strong id="vehicle-fuel">0 kg</strong>
+                    </div>
+
+
+                    <div class="data-row">
+                        <span>THRUST</span>
+                        <strong id="vehicle-thrust">0 kN</strong>
+                    </div>
+
+
+                    <div class="data-row">
+                        <span>DELTA-V</span>
+                        <strong id="vehicle-dv">0 m/s</strong>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =================================================
+             MISSION PANEL
+        ================================================== -->
+
+        <section id="missions-panel"
+                 class="large-panel">
+
+            <div class="large-panel-header">
+
+                <div>
+
+                    <h1>
+                        MISSION CONTROL
+                    </h1>
+
+                    <p>
+                        SELECT YOUR MISSION
+                    </p>
+
+                </div>
+
+                <button class="close-large-panel">
+                    ×
+                </button>
+
+            </div>
+
+
+            <div class="mission-grid">
+
+
+                <button class="mission-card"
+                        data-mission="orbit">
+
+                    <div class="mission-icon">
+                        EARTH
+                    </div>
+
+                    <h2>
+                        LOW EARTH ORBIT
+                    </h2>
+
+                    <p>
+                        Launch from Earth and
+                        establish a stable orbit.
+                    </p>
+
+                </button>
+
+
+                <button class="mission-card"
+                        data-mission="moon">
+
+                    <div class="mission-icon">
+                        MOON
+                    </div>
+
+                    <h2>
+                        LUNAR MISSION
+                    </h2>
+
+                    <p>
+                        Travel from Earth to the
+                        Moon and perform a lunar mission.
+                    </p>
+
+                </button>
+
+
+                <button class="mission-card"
+                        data-mission="mars">
+
+                    <div class="mission-icon">
+                        MARS
+                    </div>
+
+                    <h2>
+                        MARS MISSION
+                    </h2>
+
+                    <p>
+                        Plan an interplanetary
+                        transfer to Mars.
+                    </p>
+
+                </button>
+
+
+                <button class="mission-card"
+                        data-mission="station">
+
+                    <div class="mission-icon">
+                        STATION
+                    </div>
+
+                    <h2>
+                        STATION DOCKING
+                    </h2>
+
+                    <p>
+                        Reach orbit and dock with
+                        the EshaqX orbital station.
+                    </p>
+
+                </button>
+
+
+                <button class="mission-card"
+                        data-mission="satellite">
+
+                    <div class="mission-icon">
+                        SATELLITE
+                    </div>
+
+                    <h2>
+                        SATELLITE DEPLOYMENT
+                    </h2>
+
+                    <p>
+                        Deliver and deploy a
+                        scientific satellite.
+                    </p>
+
+                </button>
+
+
+                <button class="mission-card"
+                        data-mission="deep-space">
+
+                    <div class="mission-icon">
+                        DEEP SPACE
+                    </div>
+
+                    <h2>
+                        DEEP SPACE PROBE
+                    </h2>
+
+                    <p>
+                        Send a probe toward the
+                        outer Solar System.
+                    </p>
+
+                </button>
+
+            </div>
+
+        </section>
+
+
+        <!-- =================================================
+             SPACE STATION PANEL
+        ================================================== -->
+
+        <section id="station-panel"
+                 class="large-panel">
+
+            <div class="large-panel-header">
+
+                <div>
+
+                    <h1>
+                        ORBITAL SPACE STATION
+                    </h1>
+
+                    <p>
+                        ESHAQX RESEARCH STATION
+                    </p>
+
+                </div>
+
+                <button class="close-large-panel">
+                    ×
+                </button>
+
+            </div>
+
+
+            <div class="station-dashboard">
+
+                <div id="station-view">
+
+                    <!-- 3D station will be created here -->
+
+                </div>
+
+
+                <div class="station-information">
+
+                    <h2>
+                        ESHAQX ORBITAL RESEARCH STATION
+                    </h2>
+
+                    <p>
+                        An original educational orbital
+                        research station used for docking,
+                        science and spacecraft operations.
+                    </p>
+
+
+                    <div class="station-stats">
+
+                        <div>
+                            <span>ORBIT</span>
+                            <strong>LOW EARTH ORBIT</strong>
+                        </div>
+
+                        <div>
+                            <span>ALTITUDE</span>
+                            <strong>400 km</strong>
+                        </div>
+
+                        <div>
+                            <span>CREW</span>
+                            <strong>6</strong>
+                        </div>
+
+                        <div>
+                            <span>DOCKING PORTS</span>
+                            <strong>4</strong>
+                        </div>
+
+                    </div>
+
+
+                    <button id="station-docking-button"
+                            class="launch-button">
+
+                        BEGIN DOCKING
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =================================================
+             FLIGHT HUD
+        ================================================== -->
+
+        <section id="flight-hud"
+                 class="flight-interface">
+
+            <div class="flight-top">
+
+                <div class="mission-label">
+
+                    <span>
+                        MISSION
+                    </span>
+
+                    <strong id="flight-mission">
+                        EARTH ORBIT
+                    </strong>
+
+                </div>
+
+
+                <div class="flight-stage">
+
+                    <span>
+                        STAGE
+                    </span>
+
+                    <strong id="flight-stage">
+                        1
+                    </strong>
+
+                </div>
+
+            </div>
+
+
+            <div class="telemetry-panel">
+
+                <div class="telemetry-title">
+                    FLIGHT TELEMETRY
+                </div>
+
+
+                <div class="telemetry-row">
+
+                    <span>
+                        ALTITUDE
+                    </span>
+
+                    <strong id="telemetry-altitude">
+                        0 km
+                    </strong>
+
+                </div>
+
+
+                <div class="telemetry-row">
+
+                    <span>
+                        VELOCITY
+                    </span>
+
+                    <strong id="telemetry-velocity">
+                        0 m/s
+                    </strong>
+
+                </div>
+
+
+                <div class="telemetry-row">
+
+                    <span>
+                        VERTICAL SPEED
+                    </span>
+
+                    <strong id="telemetry-vertical">
+                        0 m/s
+                    </strong>
+
+                </div>
+
+
+                <div class="telemetry-row">
+
+                    <span>
+                        THROTTLE
+                    </span>
+
+                    <strong id="telemetry-throttle">
+                        0%
+                    </strong>
+
+                </div>
+
+
+                <div class="telemetry-row">
+
+                    <span>
+                        FUEL
+                    </span>
+
+                    <strong id="telemetry-fuel">
+                        100%
+                    </strong>
+
+                </div>
+
+
+                <div class="telemetry-row">
+
+                    <span>
+                        THRUST
+                    </span>
+
+                    <strong id="telemetry-thrust">
+                        0 kN
+                    </strong>
+
+                </div>
+
+
+                <div class="telemetry-row">
+
+                    <span>
+                        APOAPSIS
+                    </span>
+
+                    <strong id="telemetry-apoapsis">
+                        —
+                    </strong>
+
+                </div>
+
+
+                <div class="telemetry-row">
+
+                    <span>
+                        PERIAPSIS
+                    </span>
+
+                    <strong id="telemetry-periapsis">
+                        —
+                    </strong>
+
+                </div>
+
+            </div>
+
+
+            <!-- THROTTLE -->
+
+            <div class="throttle-control">
+
+                <label for="throttle">
+                    THROTTLE
+                </label>
+
+                <input
+                    id="throttle"
+                    type="range"
+                    min="0"
+                    max="100"
+                    value="0"
+                >
+
+                <span id="throttle-value">
+                    0%
+                </span>
+
+            </div>
+
+
+            <!-- FLIGHT BUTTONS -->
+
+            <div class="flight-controls">
+
+                <button id="ignition-button"
+                        class="launch-button">
+
+                    IGNITION
+
+                </button>
+
+
+                <button id="stage-button"
+                        class="stage-button">
+
+                    STAGE
+
+                </button>
+
+
+                <button id="rcs-button"
+                        class="secondary-button">
+
+                    RCS
+
+                </button>
+
+
+                <button id="landing-gear-button"
+                        class="secondary-button">
+
+                    LANDING GEAR
+
+                </button>
+
+            </div>
+
+
+            <!-- ATTITUDE -->
+
+            <div class="attitude-control">
+
+                <button data-control="left">
+                    ◀
+                </button>
+
+                <button data-control="up">
+                    ▲
+                </button>
+
+                <button data-control="down">
+                    ▼
+                </button>
+
+                <button data-control="right">
+                    ▶
+                </button>
+
+            </div>
+
+        </section>
+
+
+        <!-- =================================================
+             LAUNCH COUNTDOWN
+        ================================================== -->
+
+        <div id="countdown-overlay">
+
+            <div id="countdown-number">
+                10
+            </div>
+
+            <div id="countdown-status">
+                LAUNCH SEQUENCE
+            </div>
+
+        </div>
+
+
+        <!-- =================================================
+             EVENT MESSAGE
+        ================================================== -->
+
+        <div id="event-message">
+
+            <div id="event-title">
+                SYSTEM
+            </div>
+
+            <div id="event-text">
+                Systems nominal.
+            </div>
+
+        </div>
+
+
+        <!-- =================================================
+             BOTTOM STATUS
+        ================================================== -->
+
+        <div id="bottom-status">
+
+            <span>
+                ESHAQX SPACE MISSION
+            </span>
+
+            <span id="simulation-time">
+                T+ 00:00
+            </span>
+
+            <span>
+                EDUCATIONAL SIMULATOR
+            </span>
+
+        </div>
+
+
+        <!-- =================================================
+             SPACE THEORIES
+        ================================================== -->
+
+        <section id="theories-panel"
+                 class="large-panel">
+
+            <div class="large-panel-header">
+
+                <div>
+
+                    <h1>
+                        SPACE THEORIES
+                    </h1>
+
+                    <p>
+                        SCIENCE & SPACE EXPLORATION
+                    </p>
+
+                </div>
+
+                <button class="close-large-panel">
+                    ×
+                </button>
+
+            </div>
+
+
+            <div class="theory-grid">
+
+                <article>
+                    <h2>ORBITAL MECHANICS</h2>
+                    <p>
+                        Learn how gravity and velocity
+                        determine spacecraft orbits.
+                    </p>
+                </article>
+
+
+                <article>
+                    <h2>DELTA-V</h2>
+                    <p>
+                        Delta-V represents the change in
+                        velocity a spacecraft can achieve.
+                    </p>
+                </article>
+
+
+                <article>
+                    <h2>ESCAPE VELOCITY</h2>
+                    <p>
+                        The speed needed to escape the
+                        gravitational influence of a body.
+                    </p>
+                </article>
+
+
+                <article>
+                    <h2>BLACK HOLES</h2>
+                    <p>
+                        Explore the science behind
+                        extreme gravitational objects.
+                    </p>
+                </article>
+
+
+                <article>
+                    <h2>GENERAL RELATIVITY</h2>
+                    <p>
+                        Learn how gravity is described
+                        through curved spacetime.
+                    </p>
+                </article>
+
+
+                <article>
+                    <h2>EXOPLANETS</h2>
+                    <p>
+                        Discover planets orbiting stars
+                        beyond our Solar System.
+                    </p>
+                </article>
+
+            </div>
+
+        </section>
+
+
+        <!-- =================================================
+             NOTIFICATION
+        ================================================== -->
+
+        <div id="notification">
+
+            <strong id="notification-title">
+                SYSTEM
+            </strong>
+
+            <p id="notification-text">
+                Ready.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         THREE.JS
+    ====================================================== -->
+
+    <script
+        src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js">
+    </script>
+
+
+    <script
+        src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/js/controls/OrbitControls.js">
+    </script>
+
+
+    <!-- =====================================================
+         MAIN APPLICATION
+    ====================================================== -->
+
+    <script src="app.js"></script>
+
+</body>
+
+</html>

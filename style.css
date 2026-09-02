@@ -1,0 +1,1887 @@
+
+/* =========================================================
+   ESHAQX SPACE MISSION
+   Main Interface Styles
+   ========================================================= */
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+:root {
+    --bg: #02040a;
+    --panel: rgba(7, 12, 23, 0.94);
+    --panel-light: rgba(14, 22, 38, 0.94);
+    --border: rgba(120, 170, 230, 0.22);
+    --border-bright: rgba(120, 190, 255, 0.55);
+    --text: #eef6ff;
+    --muted: #8da1ba;
+    --accent: #42b9ff;
+    --accent-2: #72e0ff;
+    --success: #63e6a5;
+    --warning: #ffd166;
+    --danger: #ff5f6d;
+    --shadow: 0 20px 60px rgba(0, 0, 0, 0.55);
+}
+
+html,
+body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: var(--bg);
+    color: var(--text);
+    font-family:
+        Inter,
+        "Segoe UI",
+        Roboto,
+        Arial,
+        sans-serif;
+}
+
+body {
+    position: relative;
+}
+
+/* =========================================================
+   LOADING SCREEN
+   ========================================================= */
+
+#loading-screen {
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background:
+        radial-gradient(circle at center, #0b1830 0%, #03060d 42%, #000 100%);
+}
+
+.loading-content {
+    width: min(520px, 85vw);
+    text-align: center;
+}
+
+.loading-logo {
+    font-size: clamp(42px, 8vw, 82px);
+    font-weight: 900;
+    letter-spacing: 0.18em;
+    color: #ffffff;
+    text-shadow:
+        0 0 20px rgba(66, 185, 255, 0.8),
+        0 0 60px rgba(66, 185, 255, 0.35);
+}
+
+.loading-title {
+    margin-top: 8px;
+    font-size: 16px;
+    letter-spacing: 0.45em;
+    color: var(--accent-2);
+}
+
+.loading-line {
+    margin-top: 42px;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: var(--muted);
+}
+
+.loading-progress {
+    width: 100%;
+    height: 3px;
+    margin-top: 14px;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.08);
+}
+
+#loading-progress-bar {
+    width: 0%;
+    height: 100%;
+    background: var(--accent);
+    box-shadow: 0 0 15px var(--accent);
+    transition: width 0.25s ease;
+}
+
+/* =========================================================
+   MAIN APPLICATION
+   ========================================================= */
+
+#app {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    opacity: 0;
+    transition: opacity 0.8s ease;
+}
+
+#app.loaded {
+    opacity: 1;
+}
+
+/* =========================================================
+   THREE.JS VIEW
+   ========================================================= */
+
+#three-container {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background:
+        radial-gradient(circle at center, #071226 0%, #02050b 65%, #000 100%);
+}
+
+#three-container canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    outline: none;
+}
+
+/* =========================================================
+   TOP BAR
+   ========================================================= */
+
+#top-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 50;
+
+    height: 76px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 0 26px 0 104px;
+
+    background:
+        linear-gradient(
+            180deg,
+            rgba(2, 6, 14, 0.96),
+            rgba(2, 6, 14, 0.72),
+            transparent
+        );
+
+    pointer-events: none;
+}
+
+.brand {
+    min-width: 180px;
+}
+
+.brand-main {
+    font-size: 21px;
+    font-weight: 900;
+    letter-spacing: 0.22em;
+}
+
+.brand-sub {
+    margin-top: 3px;
+    font-size: 8px;
+    letter-spacing: 0.42em;
+    color: var(--accent);
+}
+
+#current-mode {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.25em;
+    color: rgba(235, 245, 255, 0.8);
+}
+
+.top-actions {
+    display: flex;
+    gap: 8px;
+    pointer-events: auto;
+}
+
+.top-button {
+    min-width: 92px;
+    padding: 9px 13px;
+
+    border: 1px solid var(--border);
+    border-radius: 4px;
+
+    background: rgba(7, 14, 27, 0.72);
+    color: var(--text);
+
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+
+    cursor: pointer;
+    transition:
+        background 0.2s ease,
+        border-color 0.2s ease,
+        transform 0.2s ease;
+}
+
+.top-button:hover {
+    background: rgba(35, 74, 110, 0.6);
+    border-color: var(--border-bright);
+    transform: translateY(-1px);
+}
+
+/* =========================================================
+   LEFT NAVIGATION
+   ========================================================= */
+
+#left-panel {
+    position: absolute;
+    top: 92px;
+    left: 18px;
+    bottom: 58px;
+
+    z-index: 80;
+
+    width: 72px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 7px;
+
+    padding: 8px 0;
+
+    pointer-events: auto;
+}
+
+.nav-button {
+    position: relative;
+
+    width: 64px;
+    min-height: 58px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+
+    border: 1px solid transparent;
+    border-radius: 7px;
+
+    background: rgba(5, 11, 21, 0.65);
+    color: var(--muted);
+
+    cursor: pointer;
+
+    backdrop-filter: blur(12px);
+
+    transition:
+        color 0.2s ease,
+        background 0.2s ease,
+        border-color 0.2s ease,
+        transform 0.2s ease;
+}
+
+.nav-button span:first-child {
+    font-size: 18px;
+    line-height: 1;
+}
+
+.nav-button span:last-child {
+    font-size: 7px;
+    line-height: 1.1;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.nav-button:hover {
+    color: white;
+    background: rgba(20, 48, 76, 0.8);
+    border-color: var(--border);
+    transform: translateX(2px);
+}
+
+.nav-button.active {
+    color: white;
+    background: rgba(25, 78, 117, 0.65);
+    border-color: rgba(66, 185, 255, 0.65);
+    box-shadow:
+        0 0 18px rgba(66, 185, 255, 0.12),
+        inset 0 0 20px rgba(66, 185, 255, 0.04);
+}
+
+.nav-button.active::before {
+    content: "";
+    position: absolute;
+    left: -5px;
+    top: 12px;
+    bottom: 12px;
+    width: 2px;
+    background: var(--accent);
+    box-shadow: 0 0 10px var(--accent);
+}
+
+.nav-separator {
+    width: 42px;
+    height: 1px;
+    margin: 5px 0;
+    background: rgba(255, 255, 255, 0.12);
+}
+
+/* =========================================================
+   COMMON PANELS
+   ========================================================= */
+
+.interface-panel,
+.large-panel {
+    position: absolute;
+    z-index: 100;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(13, 23, 39, 0.97),
+            rgba(3, 8, 16, 0.97)
+        );
+
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+
+    backdrop-filter: blur(18px);
+
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+
+    transform: translateY(12px);
+
+    transition:
+        opacity 0.25s ease,
+        transform 0.25s ease,
+        visibility 0.25s ease;
+}
+
+.interface-panel.visible,
+.large-panel.visible {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translateY(0);
+}
+
+.panel-header,
+.large-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 20px 22px;
+
+    border-bottom: 1px solid rgba(255, 255, 255, 0.09);
+}
+
+.panel-title,
+.large-panel-header h1 {
+    font-size: 18px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+}
+
+.panel-subtitle,
+.large-panel-header p {
+    margin-top: 5px;
+    color: var(--accent);
+    font-size: 8px;
+    letter-spacing: 0.2em;
+}
+
+.close-panel,
+.close-large-panel {
+    width: 32px;
+    height: 32px;
+
+    border: 1px solid var(--border);
+    border-radius: 4px;
+
+    background: rgba(255, 255, 255, 0.03);
+    color: var(--muted);
+
+    font-size: 22px;
+    line-height: 1;
+
+    cursor: pointer;
+}
+
+.close-panel:hover,
+.close-large-panel:hover {
+    color: white;
+    border-color: var(--border-bright);
+}
+
+.panel-body {
+    padding: 20px 22px;
+}
+
+.panel-body > p {
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.7;
+}
+
+/* =========================================================
+   SOLAR SYSTEM PANEL
+   ========================================================= */
+
+#solar-system-panel {
+    top: 100px;
+    left: 110px;
+    width: min(400px, calc(100vw - 140px));
+}
+
+.time-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+    margin-top: 20px;
+}
+
+.time-controls button {
+    padding: 8px 12px;
+
+    border: 1px solid var(--border);
+    border-radius: 4px;
+
+    background: rgba(255, 255, 255, 0.035);
+    color: var(--text);
+
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+
+    cursor: pointer;
+}
+
+.time-controls button:hover {
+    border-color: var(--accent);
+    background: rgba(66, 185, 255, 0.12);
+}
+
+/* =========================================================
+   PLANET PANEL
+   ========================================================= */
+
+.planet-panel {
+    top: 110px;
+    right: 28px;
+
+    width: min(390px, calc(100vw - 60px));
+    max-height: calc(100vh - 160px);
+
+    overflow: auto;
+}
+
+#planet-description {
+    margin-bottom: 20px;
+}
+
+.planet-stats {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.planet-stat {
+    padding: 12px;
+
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.025);
+}
+
+.planet-stat span {
+    display: block;
+    color: var(--muted);
+    font-size: 7px;
+    letter-spacing: 0.13em;
+}
+
+.planet-stat strong {
+    display: block;
+    margin-top: 7px;
+
+    font-size: 11px;
+    color: var(--text);
+}
+
+/* =========================================================
+   LARGE PANELS
+   ========================================================= */
+
+.large-panel {
+    top: 92px;
+    left: 108px;
+    right: 28px;
+    bottom: 62px;
+
+    overflow: hidden;
+}
+
+/* =========================================================
+   ROCKET BUILDER
+   ========================================================= */
+
+.builder-layout {
+    height: calc(100% - 79px);
+
+    display: grid;
+    grid-template-columns: 220px minmax(0, 1fr) 220px;
+}
+
+.parts-library {
+    padding: 18px;
+
+    border-right: 1px solid rgba(255, 255, 255, 0.08);
+
+    overflow-y: auto;
+}
+
+.parts-library h2,
+.vehicle-data h2 {
+    margin-bottom: 14px;
+
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    color: var(--accent);
+}
+
+.part-button {
+    width: 100%;
+
+    margin-bottom: 7px;
+    padding: 11px 10px;
+
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    border-radius: 4px;
+
+    background: rgba(255, 255, 255, 0.025);
+    color: #dce9f7;
+
+    text-align: left;
+
+    font-size: 8px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        border-color 0.2s ease,
+        transform 0.2s ease;
+}
+
+.part-button:hover {
+    background: rgba(66, 185, 255, 0.1);
+    border-color: rgba(66, 185, 255, 0.4);
+    transform: translateX(2px);
+}
+
+.rocket-assembly {
+    position: relative;
+
+    display: flex;
+    flex-direction: column;
+
+    min-width: 0;
+
+    background:
+        radial-gradient(
+            circle at center,
+            rgba(21, 54, 84, 0.2),
+            transparent 55%
+        );
+}
+
+.assembly-title {
+    padding: 14px 18px;
+
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+
+    color: var(--muted);
+
+    font-size: 8px;
+    letter-spacing: 0.2em;
+}
+
+#rocket-builder-view {
+    position: relative;
+
+    flex: 1;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    overflow: hidden;
+
+    background:
+        linear-gradient(
+            rgba(255, 255, 255, 0.025) 1px,
+            transparent 1px
+        ),
+        linear-gradient(
+            90deg,
+            rgba(255, 255, 255, 0.025) 1px,
+            transparent 1px
+        );
+
+    background-size: 32px 32px;
+}
+
+#builder-rocket {
+    position: relative;
+
+    width: 110px;
+    min-height: 260px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+
+    filter:
+        drop-shadow(0 15px 25px rgba(0, 0, 0, 0.6))
+        drop-shadow(0 0 14px rgba(66, 185, 255, 0.1));
+
+    transition: transform 0.3s ease;
+}
+
+.builder-empty {
+    color: #526276;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-align: center;
+}
+
+.assembly-controls {
+    display: flex;
+    gap: 8px;
+
+    padding: 12px 16px;
+
+    border-top: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.assembly-controls button {
+    flex: 1;
+}
+
+.vehicle-data {
+    padding: 18px;
+
+    border-left: 1px solid rgba(255, 255, 255, 0.08);
+
+    overflow-y: auto;
+}
+
+.data-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+
+    padding: 11px 0;
+
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.data-row span {
+    color: var(--muted);
+    font-size: 8px;
+    letter-spacing: 0.1em;
+}
+
+.data-row strong {
+    color: var(--text);
+    font-size: 10px;
+}
+
+/* =========================================================
+   BUTTONS
+   ========================================================= */
+
+.launch-button,
+.secondary-button,
+.danger-button,
+.stage-button {
+    min-height: 38px;
+
+    padding: 9px 13px;
+
+    border: 1px solid var(--border-bright);
+    border-radius: 4px;
+
+    background: rgba(66, 185, 255, 0.12);
+    color: white;
+
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        border-color 0.2s ease,
+        transform 0.2s ease;
+}
+
+.launch-button:hover {
+    background: rgba(66, 185, 255, 0.28);
+    transform: translateY(-1px);
+}
+
+.secondary-button {
+    border-color: rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.secondary-button:hover {
+    border-color: var(--border-bright);
+}
+
+.danger-button {
+    border-color: rgba(255, 95, 109, 0.45);
+    background: rgba(255, 95, 109, 0.08);
+}
+
+.danger-button:hover {
+    background: rgba(255, 95, 109, 0.18);
+}
+
+.stage-button {
+    border-color: rgba(255, 209, 102, 0.55);
+    background: rgba(255, 209, 102, 0.08);
+}
+
+.stage-button:hover {
+    background: rgba(255, 209, 102, 0.2);
+}
+
+/* =========================================================
+   MISSIONS
+   ========================================================= */
+
+.mission-grid {
+    height: calc(100% - 79px);
+
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+
+    padding: 18px;
+
+    overflow-y: auto;
+}
+
+.mission-card {
+    min-height: 160px;
+
+    padding: 18px;
+
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(22, 42, 66, 0.6),
+            rgba(5, 11, 20, 0.75)
+        );
+
+    color: white;
+
+    text-align: left;
+
+    cursor: pointer;
+
+    transition:
+        transform 0.2s ease,
+        border-color 0.2s ease,
+        background 0.2s ease;
+}
+
+.mission-card:hover {
+    transform: translateY(-3px);
+    border-color: var(--border-bright);
+    background:
+        linear-gradient(
+            145deg,
+            rgba(30, 73, 107, 0.65),
+            rgba(5, 12, 22, 0.85)
+        );
+}
+
+.mission-icon {
+    display: inline-block;
+
+    margin-bottom: 20px;
+    padding: 6px 8px;
+
+    border: 1px solid rgba(66, 185, 255, 0.3);
+
+    color: var(--accent);
+
+    font-size: 7px;
+    letter-spacing: 0.16em;
+}
+
+.mission-card h2 {
+    font-size: 12px;
+    letter-spacing: 0.1em;
+}
+
+.mission-card p {
+    margin-top: 9px;
+
+    color: var(--muted);
+
+    font-size: 10px;
+    line-height: 1.5;
+}
+
+/* =========================================================
+   SPACE STATION
+   ========================================================= */
+
+.station-dashboard {
+    height: calc(100% - 79px);
+
+    display: grid;
+    grid-template-columns: minmax(0, 1.4fr) minmax(300px, 0.8fr);
+}
+
+#station-view {
+    min-width: 0;
+
+    border-right: 1px solid rgba(255, 255, 255, 0.08);
+
+    background:
+        radial-gradient(
+            circle at center,
+            rgba(30, 72, 110, 0.18),
+            transparent 60%
+        );
+}
+
+.station-information {
+    padding: 28px;
+    overflow-y: auto;
+}
+
+.station-information h2 {
+    font-size: 15px;
+    letter-spacing: 0.08em;
+}
+
+.station-information > p {
+    margin-top: 12px;
+
+    color: var(--muted);
+
+    font-size: 11px;
+    line-height: 1.7;
+}
+
+.station-stats {
+    margin: 25px 0;
+
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+
+.station-stats div {
+    padding: 13px;
+
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.025);
+}
+
+.station-stats span {
+    display: block;
+
+    color: var(--muted);
+
+    font-size: 7px;
+    letter-spacing: 0.12em;
+}
+
+.station-stats strong {
+    display: block;
+
+    margin-top: 7px;
+
+    font-size: 9px;
+}
+
+/* =========================================================
+   FLIGHT HUD
+   ========================================================= */
+
+.flight-interface {
+    position: absolute;
+    inset: 0;
+
+    z-index: 70;
+
+    pointer-events: none;
+
+    opacity: 0;
+    visibility: hidden;
+
+    transition: opacity 0.25s ease;
+}
+
+.flight-interface.visible {
+    opacity: 1;
+    visibility: visible;
+}
+
+.flight-top {
+    position: absolute;
+    top: 90px;
+    left: 110px;
+    right: 30px;
+
+    display: flex;
+    justify-content: space-between;
+}
+
+.mission-label,
+.flight-stage {
+    min-width: 130px;
+
+    padding: 11px 14px;
+
+    background: rgba(3, 9, 17, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+
+    backdrop-filter: blur(10px);
+}
+
+.mission-label span,
+.flight-stage span {
+    display: block;
+
+    color: var(--muted);
+
+    font-size: 7px;
+    letter-spacing: 0.14em;
+}
+
+.mission-label strong,
+.flight-stage strong {
+    display: block;
+
+    margin-top: 5px;
+
+    font-size: 11px;
+    letter-spacing: 0.08em;
+}
+
+.telemetry-panel {
+    position: absolute;
+
+    top: 160px;
+    left: 110px;
+
+    width: 215px;
+
+    padding: 14px;
+
+    background: rgba(3, 9, 17, 0.75);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+
+    backdrop-filter: blur(10px);
+}
+
+.telemetry-title {
+    margin-bottom: 8px;
+
+    color: var(--accent);
+
+    font-size: 8px;
+    font-weight: 800;
+    letter-spacing: 0.18em;
+}
+
+.telemetry-row {
+    display: flex;
+    justify-content: space-between;
+
+    padding: 7px 0;
+
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.telemetry-row span {
+    color: var(--muted);
+    font-size: 7px;
+    letter-spacing: 0.08em;
+}
+
+.telemetry-row strong {
+    font-size: 9px;
+}
+
+.throttle-control {
+    position: absolute;
+
+    right: 28px;
+    bottom: 92px;
+
+    width: 270px;
+
+    padding: 15px;
+
+    background: rgba(3, 9, 17, 0.75);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+
+    backdrop-filter: blur(10px);
+
+    pointer-events: auto;
+}
+
+.throttle-control label {
+    display: block;
+
+    margin-bottom: 8px;
+
+    color: var(--muted);
+
+    font-size: 8px;
+    letter-spacing: 0.14em;
+}
+
+#throttle {
+    width: 100%;
+    accent-color: var(--accent);
+    cursor: pointer;
+}
+
+#throttle-value {
+    display: block;
+
+    margin-top: 7px;
+
+    text-align: right;
+
+    color: var(--accent);
+
+    font-size: 9px;
+}
+
+.flight-controls {
+    position: absolute;
+
+    right: 28px;
+    bottom: 30px;
+
+    display: flex;
+    gap: 8px;
+
+    pointer-events: auto;
+}
+
+.attitude-control {
+    position: absolute;
+
+    left: 50%;
+    bottom: 30px;
+
+    transform: translateX(-50%);
+
+    display: grid;
+    grid-template-columns: repeat(4, 42px);
+    gap: 5px;
+
+    pointer-events: auto;
+}
+
+.attitude-control button {
+    height: 38px;
+
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 4px;
+
+    background: rgba(3, 9, 17, 0.72);
+    color: white;
+
+    cursor: pointer;
+}
+
+.attitude-control button:hover {
+    border-color: var(--accent);
+    background: rgba(66, 185, 255, 0.12);
+}
+
+/* =========================================================
+   COUNTDOWN
+   ========================================================= */
+
+#countdown-overlay {
+    position: absolute;
+    inset: 0;
+
+    z-index: 500;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    background: rgba(0, 0, 0, 0.55);
+
+    backdrop-filter: blur(5px);
+
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+
+    transition: opacity 0.25s ease;
+}
+
+#countdown-overlay.visible {
+    opacity: 1;
+    visibility: visible;
+}
+
+#countdown-number {
+    font-size: clamp(90px, 18vw, 190px);
+    font-weight: 900;
+
+    line-height: 1;
+
+    color: white;
+
+    text-shadow:
+        0 0 30px rgba(66, 185, 255, 0.7),
+        0 0 90px rgba(66, 185, 255, 0.35);
+}
+
+#countdown-status {
+    margin-top: 18px;
+
+    color: var(--accent);
+
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.28em;
+}
+
+/* =========================================================
+   EVENT MESSAGE
+   ========================================================= */
+
+#event-message {
+    position: absolute;
+
+    left: 50%;
+    top: 88px;
+
+    z-index: 450;
+
+    width: min(400px, 70vw);
+
+    padding: 12px 16px;
+
+    transform: translate(-50%, -20px);
+
+    background: rgba(3, 9, 17, 0.85);
+    border: 1px solid rgba(66, 185, 255, 0.35);
+
+    backdrop-filter: blur(12px);
+
+    text-align: center;
+
+    opacity: 0;
+    pointer-events: none;
+
+    transition:
+        opacity 0.25s ease,
+        transform 0.25s ease;
+}
+
+#event-message.visible {
+    opacity: 1;
+    transform: translate(-50%, 0);
+}
+
+#event-title {
+    color: var(--accent);
+
+    font-size: 8px;
+    font-weight: 800;
+    letter-spacing: 0.18em;
+}
+
+#event-text {
+    margin-top: 5px;
+
+    color: var(--text);
+
+    font-size: 10px;
+}
+
+/* =========================================================
+   SPACE THEORIES
+   ========================================================= */
+
+#theories-panel {
+    overflow-y: auto;
+}
+
+.theory-grid {
+    height: calc(100% - 79px);
+
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+
+    padding: 18px;
+
+    overflow-y: auto;
+}
+
+.theory-grid article {
+    min-height: 145px;
+
+    padding: 20px;
+
+    border: 1px solid rgba(255, 255, 255, 0.08);
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(18, 34, 56, 0.55),
+            rgba(5, 10, 18, 0.8)
+        );
+
+    transition:
+        border-color 0.2s ease,
+        transform 0.2s ease;
+}
+
+.theory-grid article:hover {
+    border-color: rgba(66, 185, 255, 0.45);
+    transform: translateY(-2px);
+}
+
+.theory-grid h2 {
+    color: var(--accent);
+
+    font-size: 10px;
+    letter-spacing: 0.13em;
+}
+
+.theory-grid p {
+    margin-top: 12px;
+
+    color: var(--muted);
+
+    font-size: 10px;
+    line-height: 1.7;
+}
+
+/* =========================================================
+   BOTTOM STATUS BAR
+   ========================================================= */
+
+#bottom-status {
+    position: absolute;
+
+    left: 0;
+    right: 0;
+    bottom: 0;
+
+    z-index: 90;
+
+    height: 34px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 0 18px;
+
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+
+    background: rgba(2, 6, 12, 0.82);
+
+    color: #6f8198;
+
+    font-size: 7px;
+    letter-spacing: 0.15em;
+}
+
+#simulation-time {
+    color: var(--accent);
+}
+
+/* =========================================================
+   NOTIFICATION
+   ========================================================= */
+
+#notification {
+    position: absolute;
+
+    right: 28px;
+    top: 92px;
+
+    z-index: 300;
+
+    width: 260px;
+
+    padding: 13px 15px;
+
+    border: 1px solid rgba(255, 255, 255, 0.1);
+
+    background: rgba(3, 9, 17, 0.86);
+
+    backdrop-filter: blur(12px);
+
+    opacity: 0;
+    transform: translateX(20px);
+    pointer-events: none;
+
+    transition:
+        opacity 0.25s ease,
+        transform 0.25s ease;
+}
+
+#notification.visible {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+#notification-title {
+    color: var(--accent);
+
+    font-size: 8px;
+    letter-spacing: 0.15em;
+}
+
+#notification-text {
+    margin-top: 5px;
+
+    color: var(--muted);
+
+    font-size: 9px;
+    line-height: 1.5;
+}
+
+/* =========================================================
+   SCROLLBARS
+   ========================================================= */
+
+* {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(90, 150, 200, 0.45) transparent;
+}
+
+*::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+}
+
+*::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+    background: rgba(90, 150, 200, 0.45);
+    border-radius: 10px;
+}
+
+/* =========================================================
+   ROCKET BUILDER PART VISUALS
+   ========================================================= */
+
+.rocket-part {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.rocket-nose {
+    width: 54px;
+    height: 52px;
+
+    background:
+        linear-gradient(
+            100deg,
+            #7d8996,
+            #e5edf4 48%,
+            #697683
+        );
+
+    clip-path: polygon(
+        50% 0,
+        100% 100%,
+        0 100%
+    );
+
+    border-radius: 50% 50% 8% 8%;
+}
+
+.rocket-capsule {
+    width: 68px;
+    height: 65px;
+
+    border-radius: 45% 45% 12px 12px;
+
+    background:
+        linear-gradient(
+            90deg,
+            #5d6975,
+            #edf4f8 45%,
+            #798691
+        );
+
+    border: 2px solid #46515d;
+}
+
+.rocket-window {
+    position: absolute;
+
+    left: 50%;
+    top: 13px;
+
+    width: 20px;
+    height: 20px;
+
+    transform: translateX(-50%);
+
+    border-radius: 50%;
+
+    background: #081522;
+
+    border: 2px solid #78a4bd;
+
+    box-shadow: inset 0 0 8px rgba(66, 185, 255, 0.3);
+}
+
+.rocket-tank {
+    width: 60px;
+    height: 100px;
+
+    border-radius: 13px;
+
+    background:
+        linear-gradient(
+            90deg,
+            #66727e,
+            #e7edf1 45%,
+            #737f8a
+        );
+
+    border: 2px solid #414b55;
+}
+
+.rocket-tank.large {
+    width: 74px;
+    height: 125px;
+}
+
+.rocket-engine {
+    width: 48px;
+    height: 48px;
+
+    position: relative;
+
+    background:
+        linear-gradient(
+            90deg,
+            #313a43,
+            #8a96a0,
+            #343d46
+        );
+
+    clip-path: polygon(
+        15% 0,
+        85% 0,
+        72% 70%,
+        100% 100%,
+        0 100%,
+        28% 70%
+    );
+}
+
+.rocket-nozzle {
+    position: absolute;
+
+    left: 50%;
+    bottom: -11px;
+
+    width: 22px;
+    height: 20px;
+
+    transform: translateX(-50%);
+
+    background: #20272d;
+
+    clip-path: polygon(
+        20% 0,
+        80% 0,
+        100% 100%,
+        0 100%
+    );
+}
+
+.rocket-booster {
+    width: 28px;
+    height: 105px;
+
+    border-radius: 10px;
+
+    background:
+        linear-gradient(
+            90deg,
+            #464f57,
+            #c3cbd0,
+            #555e66
+        );
+
+    border: 2px solid #30373d;
+}
+
+.rocket-decoupler {
+    width: 78px;
+    height: 10px;
+
+    background: #aeb8bf;
+
+    border-top: 2px solid #e7edf2;
+    border-bottom: 2px solid #525c65;
+}
+
+.rocket-heatshield {
+    width: 74px;
+    height: 18px;
+
+    border-radius: 50% 50% 20% 20%;
+
+    background: #3e454b;
+    border: 2px solid #24292d;
+}
+
+.rocket-legs {
+    width: 85px;
+    height: 45px;
+
+    position: relative;
+}
+
+.rocket-legs::before,
+.rocket-legs::after {
+    content: "";
+
+    position: absolute;
+
+    bottom: 0;
+
+    width: 5px;
+    height: 42px;
+
+    background: #9da8b0;
+
+    transform-origin: bottom;
+}
+
+.rocket-legs::before {
+    left: 12px;
+    transform: rotate(28deg);
+}
+
+.rocket-legs::after {
+    right: 12px;
+    transform: rotate(-28deg);
+}
+
+.rocket-solar-panel {
+    width: 100px;
+    height: 36px;
+
+    background:
+        repeating-linear-gradient(
+            90deg,
+            #172b45 0 9px,
+            #365d84 10px 11px
+        );
+
+    border: 1px solid #6f8eaa;
+}
+
+/* =========================================================
+   ENGINE EXHAUST
+   ========================================================= */
+
+.engine-flame {
+    position: absolute;
+
+    left: 50%;
+    bottom: -72px;
+
+    width: 24px;
+    height: 78px;
+
+    transform: translateX(-50%);
+
+    clip-path: polygon(
+        50% 100%,
+        5% 0,
+        95% 0
+    );
+
+    background:
+        linear-gradient(
+            180deg,
+            #ffffff,
+            #9deaff 22%,
+            #42b9ff 55%,
+            rgba(66, 185, 255, 0)
+        );
+
+    filter:
+        blur(2px)
+        drop-shadow(0 0 12px rgba(66, 185, 255, 0.8));
+
+    animation: enginePulse 0.08s infinite alternate;
+}
+
+@keyframes enginePulse {
+    from {
+        transform: translateX(-50%) scaleX(0.85);
+    }
+
+    to {
+        transform: translateX(-50%) scaleX(1.15);
+    }
+}
+
+/* =========================================================
+   STAR FIELD
+   ========================================================= */
+
+.star {
+    position: absolute;
+
+    width: 2px;
+    height: 2px;
+
+    border-radius: 50%;
+
+    background: white;
+
+    animation: starTwinkle 2s infinite alternate;
+}
+
+@keyframes starTwinkle {
+    from {
+        opacity: 0.25;
+    }
+
+    to {
+        opacity: 0.9;
+    }
+}
+
+/* =========================================================
+   RESPONSIVE DESIGN
+   ========================================================= */
+
+@media (max-width: 1000px) {
+
+    #top-bar {
+        padding-left: 90px;
+    }
+
+    .builder-layout {
+        grid-template-columns: 180px minmax(0, 1fr);
+    }
+
+    .vehicle-data {
+        display: none;
+    }
+
+    .mission-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .theory-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .station-dashboard {
+        grid-template-columns: 1fr;
+    }
+
+    #station-view {
+        min-height: 50%;
+        border-right: 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+}
+
+@media (max-width: 700px) {
+
+    #top-bar {
+        height: 62px;
+        padding: 0 12px 0 84px;
+    }
+
+    .brand-main {
+        font-size: 16px;
+    }
+
+    .brand-sub {
+        display: none;
+    }
+
+    #current-mode {
+        display: none;
+    }
+
+    .top-button {
+        min-width: 70px;
+        padding: 7px;
+    }
+
+    #left-panel {
+        top: 72px;
+        left: 7px;
+        bottom: 45px;
+        width: 60px;
+    }
+
+    .nav-button {
+        width: 54px;
+        min-height: 52px;
+    }
+
+    .nav-button span:last-child {
+        font-size: 6px;
+    }
+
+    #solar-system-panel {
+        top: 75px;
+        left: 75px;
+        width: calc(100vw - 90px);
+    }
+
+    .planet-panel {
+        top: 75px;
+        right: 10px;
+        width: calc(100vw - 85px);
+    }
+
+    .large-panel {
+        top: 70px;
+        left: 72px;
+        right: 8px;
+        bottom: 43px;
+    }
+
+    .large-panel-header {
+        padding: 14px;
+    }
+
+    .large-panel-header h1 {
+        font-size: 14px;
+    }
+
+    .builder-layout {
+        grid-template-columns: 135px minmax(0, 1fr);
+    }
+
+    .parts-library {
+        padding: 10px;
+    }
+
+    .part-button {
+        font-size: 7px;
+        padding: 9px 6px;
+    }
+
+    .mission-grid,
+    .theory-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .flight-top {
+        top: 70px;
+        left: 76px;
+        right: 10px;
+    }
+
+    .telemetry-panel {
+        top: 140px;
+        left: 76px;
+        width: 180px;
+    }
+
+    .throttle-control {
+        right: 10px;
+        bottom: 85px;
+        width: 200px;
+    }
+
+    .flight-controls {
+        right: 10px;
+        bottom: 35px;
+    }
+
+    .attitude-control {
+        display: none;
+    }
+
+    #bottom-status {
+        height: 27px;
+        padding: 0 8px;
+        font-size: 6px;
+    }
+}
+
+/* =========================================================
+   ACCESSIBILITY / INTERACTION
+   ========================================================= */
+
+button:focus-visible,
+input:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+
+button:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+/* =========================================================
+   UTILITY STATES
+   ========================================================= */
+
+.hidden {
+    display: none !important;
+}
+
+.no-pointer {
+    pointer-events: none !important;
+}
+
+.glow {
+    box-shadow:
+        0 0 15px rgba(66, 185, 255, 0.25),
+        0 0 40px rgba(66, 185, 255, 0.08);
+}
