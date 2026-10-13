@@ -1,4709 +1,2447 @@
 
-/* =========================================================
-   ESHAQX SPACE MISSION
-   COMPLETE STABLE APP.JS
-   ========================================================= */
-
-/* =========================================================
-   STATE
-   ========================================================= */
-
-const state = {
-    paused: false,
-    activeSection: "solar-system",
-    simulationSpeed: 1,
-
-    selectedPlanet: null,
-
-    flightActive: false,
-    ignition: false,
-    countdownRunning: false,
-
-    stage: 1,
-    throttle: 0,
-
-    mission: "orbit",
-    missionTime: 0,
-
-    altitude: 0,
-    velocity: 0,
-    verticalVelocity: 0,
-
-    apoapsis: 0,
-    periapsis: 0,
-
-    fuel: 100,
-    rocketMass: 120,
-    rocketThrust: 0,
-
-    rcs: false,
-    landingGear: false,
-
-    rocketParts: []
-};
-
-
-/* =========================================================
-   PLANET DATA
-   ========================================================= */
-
-const planets = {
-
-    Sun: {
-        type: "STAR",
-        description:
-            "The Sun is the star at the center of our Solar System. Its gravity controls the motion of the planets.",
-        diameter: "1,391,000 km",
-        mass: "1.989 × 10³⁰ kg",
-        gravity: "274 m/s²",
-        distance: "0 km",
-        rotation: "≈ 25 days",
-        orbit: "Solar System center",
-        temperature: "≈ 5,500°C surface",
-        moons: "0"
-    },
-
-    Mercury: {
-        type: "TERRESTRIAL PLANET",
-        description:
-            "Mercury is the smallest planet and the closest planet to the Sun.",
-        diameter: "4,879 km",
-        mass: "3.301 × 10²³ kg",
-        gravity: "3.70 m/s²",
-        distance: "57.9 million km",
-        rotation: "58.6 days",
-        orbit: "88 days",
-        temperature: "≈ 167°C average",
-        moons: "0"
-    },
-
-    Venus: {
-        type: "TERRESTRIAL PLANET",
-        description:
-            "Venus has a thick carbon-dioxide atmosphere and is the hottest planet in the Solar System.",
-        diameter: "12,104 km",
-        mass: "4.867 × 10²⁴ kg",
-        gravity: "8.87 m/s²",
-        distance: "108.2 million km",
-        rotation: "243 days",
-        orbit: "224.7 days",
-        temperature: "≈ 464°C",
-        moons: "0"
-    },
-
-    Earth: {
-        type: "TERRESTRIAL PLANET",
-        description:
-            "Earth is our home planet. It has liquid-water oceans, an atmosphere and the only life currently known.",
-        diameter: "12,742 km",
-        mass: "5.972 × 10²⁴ kg",
-        gravity: "9.81 m/s²",
-        distance: "149.6 million km",
-        rotation: "23h 56m",
-        orbit: "365.25 days",
-        temperature: "≈ 15°C average",
-        moons: "1"
-    },
-
-    Moon: {
-        type: "NATURAL SATELLITE",
-        description:
-            "The Moon is Earth's natural satellite.",
-        diameter: "3,475 km",
-        mass: "7.342 × 10²² kg",
-        gravity: "1.62 m/s²",
-        distance: "384,400 km",
-        rotation: "27.3 days",
-        orbit: "27.3 days",
-        temperature: "≈ -20°C average",
-        moons: "0"
-    },
-
-    Mars: {
-        type: "TERRESTRIAL PLANET",
-        description:
-            "Mars is a cold desert world with a thin atmosphere and polar ice caps.",
-        diameter: "6,779 km",
-        mass: "6.417 × 10²³ kg",
-        gravity: "3.71 m/s²",
-        distance: "227.9 million km",
-        rotation: "24h 37m",
-        orbit: "687 days",
-        temperature: "≈ -63°C average",
-        moons: "2"
-    },
-
-    Jupiter: {
-        type: "GAS GIANT",
-        description:
-            "Jupiter is the largest planet in the Solar System and contains powerful atmospheric storms.",
-        diameter: "139,820 km",
-        mass: "1.898 × 10²⁷ kg",
-        gravity: "24.79 m/s²",
-        distance: "778.5 million km",
-        rotation: "9h 56m",
-        orbit: "11.86 years",
-        temperature: "≈ -110°C cloud tops",
-        moons: "95+"
-    },
-
-    Saturn: {
-        type: "GAS GIANT",
-        description:
-            "Saturn is famous for its large ring system made mainly from ice and rocky material.",
-        diameter: "116,460 km",
-        mass: "5.683 × 10²⁶ kg",
-        gravity: "10.44 m/s²",
-        distance: "1.43 billion km",
-        rotation: "10h 42m",
-        orbit: "29.45 years",
-        temperature: "≈ -140°C cloud tops",
-        moons: "140+"
-    },
-
-    Uranus: {
-        type: "ICE GIANT",
-        description:
-            "Uranus is an ice giant with a blue-green methane-rich atmosphere.",
-        diameter: "50,724 km",
-        mass: "8.681 × 10²⁵ kg",
-        gravity: "8.69 m/s²",
-        distance: "2.87 billion km",
-        rotation: "17h 14m",
-        orbit: "84 years",
-        temperature: "≈ -195°C",
-        moons: "27"
-    },
-
-    Neptune: {
-        type: "ICE GIANT",
-        description:
-            "Neptune is the most distant major planet and has extremely fast atmospheric winds.",
-        diameter: "49,244 km",
-        mass: "1.024 × 10²⁶ kg",
-        gravity: "11.15 m/s²",
-        distance: "4.50 billion km",
-        rotation: "16h 6m",
-        orbit: "164.8 years",
-        temperature: "≈ -200°C",
-        moons: "14"
-    }
-};
-
-
-/* =========================================================
-   THREE.JS VARIABLES
-   ========================================================= */
-
-let scene;
-let camera;
-let renderer;
-
-let raycaster;
-let mouse;
-
-let sun;
-
-const celestialBodies = {};
-const orbitObjects = [];
-const orbitLines = [];
-
-let solarSystemGroup;
-let flightGroup;
-
-let earthLaunchEnvironment;
-let earthGlobe;
-let earthClouds;
-let launchPad;
-let launchTower;
-
-let rocket = null;
-let rocketCore = null;
-
-let rocketVelocity = 0;
-
-let engineFlames = [];
-let engineLights = [];
-let smokeParticles = [];
-
-let stageGroups = [];
-
-let cameraYaw = 0.65;
-let cameraPitch = 0.25;
-let cameraDistance = 34;
-
-let dragging = false;
-let lastPointerX = 0;
-let lastPointerY = 0;
-
-let lastTime = performance.now();
-
-let countdownTimer = null;
-let notificationTimer = null;
-
-
-/* =========================================================
-   START
-   ========================================================= */
-
-document.addEventListener("DOMContentLoaded", () => {
-
-    initializeInterface();
-
-    if (typeof THREE === "undefined") {
-        console.error("Three.js is not loaded.");
-        return;
-    }
-
-    initializeThreeJS();
-    initializeSolarSystem();
-    initializeLaunchEnvironment();
-    initializeBuilder();
-
-    activateSection("solar-system");
-
-    simulateLoading();
-
-    animate();
-});
-
-
-/* =========================================================
-   LOADING
-   ========================================================= */
-
-function simulateLoading() {
-
-    const bar =
-        document.getElementById("loading-progress-bar");
-
-    if (!bar) {
-        return;
-    }
-
-    let progress = 0;
-
-    const timer = setInterval(() => {
-
-        progress += 5;
-
-        if (progress >= 100) {
-
-            progress = 100;
-
-            clearInterval(timer);
-
-            setTimeout(() => {
-
-                const loading =
-                    document.getElementById("loading-screen");
-
-                const app =
-                    document.getElementById("app");
-
-                if (loading) {
-                    loading.style.opacity = "0";
-
-                    setTimeout(() => {
-                        loading.style.display = "none";
-                    }, 600);
-                }
-
-                if (app) {
-                    app.classList.add("loaded");
-                }
-
-            }, 250);
+/* ============================================================
+   ASTROVIA — SPACE MISSION SIMULATOR
+   Three.js r160 compatible
+   Educational Newtonian flight and orbital simulation
+
+   Replace your existing app.js with this file.
+   ============================================================ */
+
+(() => {
+    "use strict";
+
+    // ----------------------------------------------------------
+    // 1. CONFIGURATION
+    // ----------------------------------------------------------
+
+    const CONFIG = {
+        AU_KM: 149597870.7,
+        EARTH_RADIUS_KM: 6371,
+        EARTH_MU: 398600.4418,
+        SUN_MU: 1.32712440018e11,
+        G0: 9.80665,
+
+        // Visual scale only; physics uses km, seconds and kg.
+        AU_SCALE: 30,
+        EARTH_VISUAL_RADIUS: 45,
+
+        MAX_FRAME_DT: 0.05,
+        MAX_PHYSICS_STEP: 2,
+        STAR_COUNT: 4500
+    };
+
+    const PLANETS = {
+        Mercury: {
+            a: 0.3871, period: 87.969, radius: 2439.7,
+            mu: 22032, color: 0xaaa49b,
+            type: "Terrestrial planet", diameter: "4,879 km",
+            mass: "3.30 × 10²³ kg", gravity: "3.70 m/s²",
+            distance: "0.387 AU", rotation: "58.6 Earth days",
+            orbit: "88 Earth days", temperature: "167°C average",
+            moons: "0", phase: 0.8,
+            description: "The smallest planet, orbiting closest to the Sun."
+        },
+        Venus: {
+            a: 0.7233, period: 224.701, radius: 6051.8,
+            mu: 324859, color: 0xd9ad75,
+            type: "Terrestrial planet", diameter: "12,104 km",
+            mass: "4.87 × 10²⁴ kg", gravity: "8.87 m/s²",
+            distance: "0.723 AU", rotation: "243 Earth days",
+            orbit: "225 Earth days", temperature: "465°C average",
+            moons: "0", phase: 2.1,
+            description: "A hot world with a thick carbon-dioxide atmosphere."
+        },
+        Earth: {
+            a: 1, period: 365.256, radius: 6371,
+            mu: 398600.4418, color: 0x318be8,
+            type: "Terrestrial planet", diameter: "12,742 km",
+            mass: "5.97 × 10²⁴ kg", gravity: "9.81 m/s²",
+            distance: "1 AU", rotation: "23 h 56 min",
+            orbit: "365.25 days", temperature: "15°C average",
+            moons: "1", phase: 0,
+            description: "Our home planet, with liquid-water oceans and a protective atmosphere."
+        },
+        Mars: {
+            a: 1.5237, period: 686.98, radius: 3389.5,
+            mu: 42828.4, color: 0xd66b4b,
+            type: "Terrestrial planet", diameter: "6,779 km",
+            mass: "6.42 × 10²³ kg", gravity: "3.71 m/s²",
+            distance: "1.524 AU", rotation: "24 h 37 min",
+            orbit: "687 Earth days", temperature: "-65°C average",
+            moons: "2", phase: 3.2,
+            description: "A cold desert world and an important target for robotic and future crewed missions."
+        },
+        Jupiter: {
+            a: 5.2044, period: 4332.59, radius: 69911,
+            mu: 126686534, color: 0xd8b18a,
+            type: "Gas giant", diameter: "139,820 km",
+            mass: "1.90 × 10²⁷ kg", gravity: "24.79 m/s²",
+            distance: "5.20 AU", rotation: "9 h 56 min",
+            orbit: "11.86 Earth years", temperature: "-110°C cloud tops",
+            moons: "95+", phase: 4.4,
+            description: "The largest planet, known for its bands and enormous storms."
+        },
+        Saturn: {
+            a: 9.5826, period: 10759.22, radius: 58232,
+            mu: 37931187, color: 0xd8c08d,
+            type: "Gas giant", diameter: "116,460 km",
+            mass: "5.68 × 10²⁶ kg", gravity: "10.44 m/s²",
+            distance: "9.58 AU", rotation: "About 10.7 hours",
+            orbit: "29.4 Earth years", temperature: "-140°C cloud tops",
+            moons: "146+", phase: 5.1,
+            description: "A gas giant surrounded by a spectacular system of rings."
+        },
+        Uranus: {
+            a: 19.2184, period: 30688.5, radius: 25362,
+            mu: 5793939, color: 0x85d6d6,
+            type: "Ice giant", diameter: "50,724 km",
+            mass: "8.68 × 10²⁵ kg", gravity: "8.69 m/s²",
+            distance: "19.2 AU", rotation: "About 17.2 hours",
+            orbit: "84 Earth years", temperature: "-195°C average",
+            moons: "28+", phase: 5.8,
+            description: "An ice giant with an extreme axial tilt."
+        },
+        Neptune: {
+            a: 30.1104, period: 60182, radius: 24622,
+            mu: 6836529, color: 0x426cf5,
+            type: "Ice giant", diameter: "49,244 km",
+            mass: "1.02 × 10²⁶ kg", gravity: "11.15 m/s²",
+            distance: "30.1 AU", rotation: "About 16.1 hours",
+            orbit: "165 Earth years", temperature: "-200°C average",
+            moons: "16+", phase: 1.4,
+            description: "A distant ice giant with powerful winds."
+        }
+    };
+
+    const MOON = {
+        a: 384400 / CONFIG.AU_KM,
+        period: 27.3217,
+        radius: 1737.4,
+        mu: 4902.8,
+        color: 0xb8b8b8,
+        phase: 1.2
+    };
+
+    const PARTS = {
+        nose:          { name: "Nose Cone", mass: 200, fuel: 0, thrust: 0 },
+        capsule:       { name: "Crew Capsule", mass: 1800, fuel: 0, thrust: 0 },
+        "fuel-small":  { name: "Small Fuel Tank", mass: 900, fuel: 3500, thrust: 0 },
+        "fuel-large":  { name: "Large Fuel Tank", mass: 2200, fuel: 10000, thrust: 0 },
+        engine:        { name: "Main Engine", mass: 1500, fuel: 0, thrust: 850, isp: 300 },
+        "vacuum-engine": { name: "Vacuum Engine", mass: 800, fuel: 0, thrust: 450, isp: 350 },
+        booster:       { name: "Solid Booster", mass: 1000, fuel: 1800, thrust: 500, isp: 240 },
+        decoupler:     { name: "Decoupler", mass: 100, fuel: 0, thrust: 0 },
+        heatshield:    { name: "Heat Shield", mass: 500, fuel: 0, thrust: 0 },
+        "landing-legs": { name: "Landing Legs", mass: 300, fuel: 0, thrust: 0 },
+        parachute:     { name: "Parachute", mass: 100, fuel: 0, thrust: 0 },
+        rcs:           { name: "RCS Thrusters", mass: 150, fuel: 0, thrust: 0 },
+        "solar-panel": { name: "Solar Panels", mass: 120, fuel: 0, thrust: 0 },
+        antenna:       { name: "Antenna", mass: 30, fuel: 0, thrust: 0 },
+        "docking-port": { name: "Docking Port", mass: 100, fuel: 0, thrust: 0 }
+    };
+
+    const $ = id => document.getElementById(id);
+
+    const clamp = (value, min, max) =>
+        Math.max(min, Math.min(max, value));
+
+    const lerp = (a, b, t) => a + (b - a) * t;
+
+    const fmt = (value, digits = 1) =>
+        Number.isFinite(value) ? value.toFixed(digits) : "—";
+
+    // ----------------------------------------------------------
+    // 2. APPLICATION STATE
+    // ----------------------------------------------------------
+
+    const state = {
+        ready: false,
+        paused: false,
+        speed: 1,
+        activeSection: "solar-system",
+        simDays: 0,
+
+        selectedPlanet: "Earth",
+        mission: "orbit",
+
+        rocketParts: [],
+        flightActive: false,
+        phase: "idle", // idle, launch, orbit, transfer, arrived
+
+        ignition: false,
+        countdownRunning: false,
+        countdown: 0,
+
+        throttle: 0,
+        stage: 1,
+        rcs: false,
+        landingGear: false,
+
+        altitude: 0,          // km above Earth
+        verticalVelocity: 0,  // m/s
+        horizontalVelocity: 0,// m/s
+        fuel: 0,               // kg
+        maxFuel: 0,             // kg
+        dryMass: 8000,          // kg
+        mass: 8000,             // kg
+        thrust: 0,              // kN
+        isp: 300,               // seconds
+        missionTime: 0,
+
+        pitch: 0,
+        heading: 0,
+
+        heliocentricPosition: null, // km
+        heliocentricVelocity: null, // km/s
+        launchDirection: 1,
+        destination: null,
+
+        arrivalNotified: false,
+        lastTime: 0,
+        pointerDown: null
+    };
+
+    // ----------------------------------------------------------
+    // 3. THREE.JS OBJECTS
+    // ----------------------------------------------------------
+
+    let scene;
+    let camera;
+    let renderer;
+    let raycaster;
+    let mouse;
+
+    let solarSystemGroup;
+    let launchGroup;
+    let rocket;
+    let rocketCore;
+    let mainFlame;
+    let mainFlameLight;
+
+    let earthGlobe;
+    let launchPad;
+    let launchTower;
+
+    const celestialBodies = new Map();
+    const planetVisuals = new Map();
+    const orbitLines = [];
+    const boosterGroups = [];
+    const smokeParticles = [];
+
+    let cameraTarget = null;
+    let cameraYaw = 0.3;
+    let cameraPitch = 0.25;
+    let cameraDistance = 110;
+    let dragging = false;
+    let dragStart = null;
+    let suppressClick = false;
+    let lastFrame = 0;
+    let countdownInterval = null;
+    let notificationTimeout = null;
+
+    const worldUp = new THREE.Vector3(0, 1, 0);
+    const tmpVec = new THREE.Vector3();
+
+    // ----------------------------------------------------------
+    // 4. STARTUP
+    // ----------------------------------------------------------
+
+    document.addEventListener("DOMContentLoaded", init);
+
+    function init() {
+        if (!window.THREE) {
+            showNotification("Three.js did not load. Check your internet connection.");
+            return;
         }
 
-        bar.style.width = progress + "%";
+        try {
+            initThree();
+            createStarField();
+            createSolarSystem();
+            createLaunchEnvironment();
+            initInterface();
+            loadSavedRocket();
+            updateBuilder();
+            activateSection("solar-system");
+            startLoadingScreen();
 
-    }, 60);
-}
-
-
-/* =========================================================
-   THREE.JS INITIALIZATION
-   ========================================================= */
-
-function initializeThreeJS() {
-
-    const container =
-        document.getElementById("three-container");
-
-    if (!container) {
-        return;
+            state.ready = true;
+            lastFrame = performance.now();
+            requestAnimationFrame(animate);
+        } catch (error) {
+            console.error("Astrovia initialization failed:", error);
+            showNotification("Initialization error. Open the browser console for details.");
+        }
     }
 
-    scene = new THREE.Scene();
+    function initThree() {
+        const container = $("three-container");
+        if (!container) throw new Error("Missing #three-container");
 
-    scene.background =
-        new THREE.Color(0x01040a);
+        scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x030712);
+        scene.fog = new THREE.FogExp2(0x030712, 0.00006);
 
-    camera =
-        new THREE.PerspectiveCamera(
+        camera = new THREE.PerspectiveCamera(
             55,
-            window.innerWidth / window.innerHeight,
+            Math.max(1, container.clientWidth) /
+                Math.max(1, container.clientHeight),
             0.1,
             100000
         );
 
-    camera.position.set(
-        0,
-        65,
-        180
-    );
+        camera.position.set(0, 35, 150);
 
-    renderer =
-        new THREE.WebGLRenderer({
+        renderer = new THREE.WebGLRenderer({
             antialias: true,
+            alpha: false,
             powerPreference: "high-performance"
         });
 
-    renderer.setPixelRatio(
-        Math.min(window.devicePixelRatio, 2)
-    );
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        renderer.setSize(container.clientWidth, container.clientHeight);
+        renderer.outputColorSpace = THREE.SRGBColorSpace;
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 1.1;
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        container.appendChild(renderer.domElement);
 
-    renderer.setSize(
-        window.innerWidth,
-        window.innerHeight
-    );
+        scene.add(new THREE.HemisphereLight(0x8ca9ff, 0x111827, 1.2));
 
-    if ("outputColorSpace" in renderer) {
-        renderer.outputColorSpace =
-            THREE.SRGBColorSpace;
+        const sunLight = new THREE.PointLight(0xffedc0, 3.2, 0, 1.4);
+        sunLight.position.set(0, 0, 0);
+        scene.add(sunLight);
+
+        solarSystemGroup = new THREE.Group();
+        scene.add(solarSystemGroup);
+
+        launchGroup = new THREE.Group();
+        launchGroup.visible = false;
+        scene.add(launchGroup);
+
+        raycaster = new THREE.Raycaster();
+        mouse = new THREE.Vector2();
+
+        renderer.domElement.addEventListener("pointerdown", onPointerDown);
+        renderer.domElement.addEventListener("pointermove", onPointerMove);
+        renderer.domElement.addEventListener("pointerup", onPointerUp);
+        renderer.domElement.addEventListener("pointercancel", onPointerUp);
+        renderer.domElement.addEventListener("wheel", onWheel, { passive: false });
+        renderer.domElement.addEventListener("click", onCanvasClick);
+
+        window.addEventListener("resize", resizeRenderer);
     }
 
-    renderer.shadowMap.enabled = true;
+    function startLoadingScreen() {
+        const screen = $("loading-screen");
+        const bar = $("loading-progress-bar");
 
-    renderer.shadowMap.type =
-        THREE.PCFSoftShadowMap;
+        if (bar) bar.style.width = "100%";
 
-    container.appendChild(
-        renderer.domElement
-    );
-
-    /* LIGHTING */
-
-    const ambient =
-        new THREE.HemisphereLight(
-            0x9cc9ef,
-            0x05070b,
-            0.5
-        );
-
-    scene.add(ambient);
-
-    const sunLight =
-        new THREE.PointLight(
-            0xffffff,
-            3.8,
-            0,
-            1
-        );
-
-    sunLight.position.set(
-        0,
-        0,
-        0
-    );
-
-    sunLight.castShadow = true;
-
-    scene.add(sunLight);
-
-    raycaster =
-        new THREE.Raycaster();
-
-    mouse =
-        new THREE.Vector2();
-
-    createStarField();
-
-    setupMouseCamera();
-
-    renderer.domElement.addEventListener(
-        "click",
-        handleSceneClick
-    );
-
-    window.addEventListener(
-        "resize",
-        handleResize
-    );
-}
-
-
-/* =========================================================
-   CUSTOM CAMERA
-   ========================================================= */
-
-function setupMouseCamera() {
-
-    const canvas = renderer.domElement;
-
-    canvas.addEventListener(
-        "pointerdown",
-        event => {
-
-            dragging = true;
-
-            lastPointerX = event.clientX;
-            lastPointerY = event.clientY;
-
-            canvas.setPointerCapture(
-                event.pointerId
-            );
-        }
-    );
-
-    canvas.addEventListener(
-        "pointermove",
-        event => {
-
-            if (!dragging) {
-                return;
+        window.setTimeout(() => {
+            if (screen) {
+                screen.style.opacity = "0";
+                screen.style.transition = "opacity 0.5s ease";
+                window.setTimeout(() => screen.remove(), 550);
             }
-
-            const dx =
-                event.clientX - lastPointerX;
-
-            const dy =
-                event.clientY - lastPointerY;
-
-            lastPointerX = event.clientX;
-            lastPointerY = event.clientY;
-
-            cameraYaw -= dx * 0.006;
-
-            cameraPitch -= dy * 0.006;
-
-            cameraPitch =
-                Math.max(
-                    -1.25,
-                    Math.min(
-                        1.25,
-                        cameraPitch
-                    )
-                );
-
-            updateCameraPosition();
-        }
-    );
-
-    canvas.addEventListener(
-        "pointerup",
-        event => {
-
-            dragging = false;
-
-            try {
-                canvas.releasePointerCapture(
-                    event.pointerId
-                );
-            } catch (error) {
-                /* ignore */
-            }
-        }
-    );
-
-    canvas.addEventListener(
-        "pointercancel",
-        () => {
-            dragging = false;
-        }
-    );
-
-    canvas.addEventListener(
-        "wheel",
-        event => {
-
-            event.preventDefault();
-
-            cameraDistance +=
-                event.deltaY * 0.04;
-
-            cameraDistance =
-                Math.max(
-                    8,
-                    Math.min(
-                        500,
-                        cameraDistance
-                    )
-                );
-
-            updateCameraPosition();
-        },
-        { passive: false }
-    );
-}
-
-
-/* =========================================================
-   CAMERA POSITION
-   ========================================================= */
-
-function updateCameraPosition() {
-
-    if (!camera) {
-        return;
+        }, 350);
     }
 
-    let target =
-        new THREE.Vector3(
-            0,
-            0,
-            0
-        );
+    // ----------------------------------------------------------
+    // 5. SOLAR SYSTEM
+    // ----------------------------------------------------------
 
-    if (
-        state.activeSection === "flight" &&
-        rocket
-    ) {
-        target.copy(
-            rocket.position
-        );
-    }
-
-    const cosPitch =
-        Math.cos(cameraPitch);
-
-    const x =
-        target.x +
-        Math.sin(cameraYaw) *
-        cosPitch *
-        cameraDistance;
-
-    const y =
-        target.y +
-        Math.sin(cameraPitch) *
-        cameraDistance;
-
-    const z =
-        target.z +
-        Math.cos(cameraYaw) *
-        cosPitch *
-        cameraDistance;
-
-    camera.position.set(
-        x,
-        y,
-        z
-    );
-
-    camera.lookAt(target);
-}
-
-
-/* =========================================================
-   STAR FIELD
-   ========================================================= */
-
-function createStarField() {
-
-    const geometry =
-        new THREE.BufferGeometry();
-
-    const count = 7000;
-
-    const positions =
-        new Float32Array(
-            count * 3
-        );
-
-    for (
-        let i = 0;
-        i < count;
-        i++
-    ) {
-
-        const radius = 2500;
-
-        positions[i * 3] =
-            (Math.random() - 0.5) *
-            radius;
-
-        positions[i * 3 + 1] =
-            (Math.random() - 0.5) *
-            radius;
-
-        positions[i * 3 + 2] =
-            (Math.random() - 0.5) *
-            radius;
-    }
-
-    geometry.setAttribute(
-        "position",
-        new THREE.BufferAttribute(
-            positions,
-            3
-        )
-    );
-
-    const material =
-        new THREE.PointsMaterial({
-            color: 0xffffff,
-            size: 1.2,
-            sizeAttenuation: true
+    function createSolarSystem() {
+        const sunGeometry = new THREE.SphereGeometry(8, 48, 32);
+        const sunMaterial = new THREE.MeshBasicMaterial({
+            color: 0xffcc65
         });
 
-    const stars =
-        new THREE.Points(
-            geometry,
-            material
-        );
+        const sun = new THREE.Mesh(sunGeometry, sunMaterial);
+        sun.userData = { name: "Sun", isSun: true };
+        solarSystemGroup.add(sun);
+        celestialBodies.set("Sun", sun);
 
-    scene.add(stars);
-}
-
-
-/* =========================================================
-   SOLAR SYSTEM
-   ========================================================= */
-
-function initializeSolarSystem() {
-
-    solarSystemGroup =
-        new THREE.Group();
-
-    solarSystemGroup.name =
-        "SolarSystem";
-
-    scene.add(
-        solarSystemGroup
-    );
-
-    createSun();
-
-    createPlanet(
-        "Mercury",
-        14,
-        2.0,
-        "mercury"
-    );
-
-    createPlanet(
-        "Venus",
-        22,
-        3.2,
-        "venus"
-    );
-
-    createPlanet(
-        "Earth",
-        32,
-        4.2,
-        "earth"
-    );
-
-    createPlanet(
-        "Moon",
-        39,
-        1.4,
-        "moon"
-    );
-
-    createPlanet(
-        "Mars",
-        48,
-        2.8,
-        "mars"
-    );
-
-    createPlanet(
-        "Jupiter",
-        65,
-        7.5,
-        "jupiter"
-    );
-
-    createPlanet(
-        "Saturn",
-        85,
-        7,
-        "saturn"
-    );
-
-    createPlanet(
-        "Uranus",
-        108,
-        5.3,
-        "uranus"
-    );
-
-    createPlanet(
-        "Neptune",
-        130,
-        5.1,
-        "neptune"
-    );
-
-    createOrbitLines();
-}
-
-
-/* =========================================================
-   SUN
-   ========================================================= */
-
-function createSun() {
-
-    const geometry =
-        new THREE.SphereGeometry(
-            8,
-            64,
-            64
-        );
-
-    const material =
-        new THREE.MeshBasicMaterial({
-            color: 0xffc247
-        });
-
-    sun =
-        new THREE.Mesh(
-            geometry,
-            material
-        );
-
-    sun.userData.name = "Sun";
-
-    solarSystemGroup.add(
-        sun
-    );
-
-    celestialBodies.Sun =
-        sun;
-
-    const glow =
-        new THREE.Mesh(
-            new THREE.SphereGeometry(
-                10,
-                48,
-                48
-            ),
+        const glow = new THREE.Mesh(
+            new THREE.SphereGeometry(10, 32, 24),
             new THREE.MeshBasicMaterial({
-                color: 0xff9e22,
+                color: 0xffa63d,
                 transparent: true,
-                opacity: 0.16,
+                opacity: 0.12,
                 side: THREE.BackSide,
-                blending:
-                    THREE.AdditiveBlending
+                depthWrite: false
             })
         );
+        sun.add(glow);
 
-    sun.add(
-        glow
-    );
-}
+        for (const [name, data] of Object.entries(PLANETS)) {
+            const distance = data.a * CONFIG.AU_SCALE;
+            const visualRadius = getVisualPlanetRadius(name);
 
+            const material = new THREE.MeshStandardMaterial({
+                color: data.color,
+                roughness: name === "Earth" ? 0.85 : 0.95,
+                metalness: 0.02
+            });
 
-/* =========================================================
-   PLANETS
-   ========================================================= */
-
-function createPlanet(
-    name,
-    distance,
-    radius,
-    type
-) {
-
-    const geometry =
-        new THREE.SphereGeometry(
-            radius,
-            64,
-            64
-        );
-
-    const material =
-        createPlanetMaterial(
-            type
-        );
-
-    const planet =
-        new THREE.Mesh(
-            geometry,
-            material
-        );
-
-    const angle =
-        Math.random() *
-        Math.PI *
-        2;
-
-    planet.userData = {
-        name: name,
-        distance: distance,
-        radius: radius,
-        angle: angle,
-        orbitSpeed:
-            0.03 /
-            Math.sqrt(
-                Math.max(
-                    distance,
-                    1
-                )
-            )
-    };
-
-    planet.position.set(
-        Math.cos(angle) * distance,
-        0,
-        Math.sin(angle) * distance
-    );
-
-    planet.castShadow = true;
-    planet.receiveShadow = true;
-
-    solarSystemGroup.add(
-        planet
-    );
-
-    celestialBodies[name] =
-        planet;
-
-    orbitObjects.push(
-        planet
-    );
-
-    createPlanetDetails(
-        planet,
-        radius,
-        type
-    );
-
-    if (name === "Saturn") {
-        createSaturnRings(
-            planet,
-            radius
-        );
-    }
-}
-
-
-/* =========================================================
-   PLANET MATERIALS
-   ========================================================= */
-
-function createPlanetMaterial(
-    type
-) {
-
-    const colors = {
-
-        mercury: 0x8c8984,
-
-        venus: 0xc99462,
-
-        earth: 0x246fae,
-
-        moon: 0x999999,
-
-        mars: 0xb6533a,
-
-        jupiter: 0xc39a77,
-
-        saturn: 0xcbb98e,
-
-        uranus: 0x69c8d0,
-
-        neptune: 0x3159c9
-    };
-
-    return new THREE.MeshStandardMaterial({
-        color:
-            colors[type] ||
-            0x888888,
-
-        roughness: 0.82,
-
-        metalness: 0.02
-    });
-}
-
-
-/* =========================================================
-   PLANET ATMOSPHERE + CLOUDS
-   ========================================================= */
-
-function createPlanetDetails(
-    planet,
-    radius,
-    type
-) {
-
-    const atmosphereColors = {
-
-        earth: 0x45a8ff,
-
-        venus: 0xe7a657,
-
-        mars: 0xd76b50,
-
-        jupiter: 0xe2c39d,
-
-        saturn: 0xe0c99d,
-
-        uranus: 0x70e4ea,
-
-        neptune: 0x4e75ff
-    };
-
-    if (
-        atmosphereColors[type]
-    ) {
-
-        const atmosphere =
-            new THREE.Mesh(
-                new THREE.SphereGeometry(
-                    radius * 1.06,
-                    48,
-                    48
-                ),
-                new THREE.MeshBasicMaterial({
-                    color:
-                        atmosphereColors[type],
-                    transparent: true,
-                    opacity:
-                        type === "earth"
-                            ? 0.16
-                            : 0.08,
-                    side: THREE.BackSide,
-                    blending:
-                        THREE.AdditiveBlending
-                })
+            const sphere = new THREE.Mesh(
+                new THREE.SphereGeometry(visualRadius, 32, 24),
+                material
             );
 
-        planet.add(
-            atmosphere
+            sphere.castShadow = true;
+            sphere.receiveShadow = true;
+            sphere.userData = {
+                name,
+                distance,
+                a: data.a,
+                period: data.period,
+                phase: data.phase,
+                visualRadius,
+                isPlanet: true
+            };
+
+            solarSystemGroup.add(sphere);
+            celestialBodies.set(name, sphere);
+            planetVisuals.set(name, sphere);
+
+            const orbit = createOrbitLine(distance, 0x30405e);
+            solarSystemGroup.add(orbit);
+            orbitLines.push(orbit);
+
+            if (name === "Earth") addEarthVisuals(sphere);
+            if (name === "Saturn") addSaturnRings(sphere);
+        }
+
+        // The Moon is a child of Earth, so its orbit is not updated twice.
+        const earth = celestialBodies.get("Earth");
+        const moon = new THREE.Mesh(
+            new THREE.SphereGeometry(1.35, 24, 16),
+            new THREE.MeshStandardMaterial({
+                color: MOON.color,
+                roughness: 1
+            })
         );
+        moon.userData = { name: "Moon", isPlanet: true, isMoon: true };
+        earth.add(moon);
+        celestialBodies.set("Moon", moon);
     }
 
-    if (type === "earth") {
+    function getVisualPlanetRadius(name) {
+        const radii = {
+            Mercury: 1.2,
+            Venus: 2.0,
+            Earth: 2.2,
+            Mars: 1.6,
+            Jupiter: 5.6,
+            Saturn: 4.9,
+            Uranus: 3.3,
+            Neptune: 3.2
+        };
+        return radii[name] || 2;
+    }
 
-        const cloudMaterial =
+    function createOrbitLine(radius, color) {
+        const points = [];
+        const segments = 180;
+
+        for (let i = 0; i <= segments; i++) {
+            const angle = i / segments * Math.PI * 2;
+            points.push(new THREE.Vector3(
+                Math.cos(angle) * radius,
+                0,
+                Math.sin(angle) * radius
+            ));
+        }
+
+        const geometry = new THREE.BufferGeometry().setFromPoints(points);
+        const material = new THREE.LineBasicMaterial({
+            color,
+            transparent: true,
+            opacity: 0.45
+        });
+
+        return new THREE.LineLoop(geometry, material);
+    }
+
+    function addEarthVisuals(earth) {
+        const clouds = new THREE.Mesh(
+            new THREE.SphereGeometry(2.26, 32, 24),
             new THREE.MeshStandardMaterial({
                 color: 0xffffff,
                 transparent: true,
-                opacity: 0.14,
+                opacity: 0.13,
                 roughness: 1
-            });
-
-        earthClouds =
-            new THREE.Mesh(
-                new THREE.SphereGeometry(
-                    radius * 1.018,
-                    64,
-                    64
-                ),
-                cloudMaterial
-            );
-
-        planet.add(
-            earthClouds
+            })
         );
+        earth.add(clouds);
+
+        const atmosphere = new THREE.Mesh(
+            new THREE.SphereGeometry(2.36, 32, 24),
+            new THREE.MeshBasicMaterial({
+                color: 0x319bff,
+                transparent: true,
+                opacity: 0.13,
+                side: THREE.BackSide,
+                depthWrite: false
+            })
+        );
+        earth.add(atmosphere);
     }
-}
 
-
-/* =========================================================
-   SATURN RINGS
-   ========================================================= */
-
-function createSaturnRings(
-    planet,
-    radius
-) {
-
-    const ring =
-        new THREE.Mesh(
-            new THREE.RingGeometry(
-                radius * 1.25,
-                radius * 2.1,
-                128
-            ),
+    function addSaturnRings(saturn) {
+        const ring = new THREE.Mesh(
+            new THREE.RingGeometry(6.0, 9.0, 80),
             new THREE.MeshStandardMaterial({
-                color: 0xbca77f,
+                color: 0xc8b38e,
                 side: THREE.DoubleSide,
                 transparent: true,
                 opacity: 0.72,
-                roughness: 0.9
-            })
-        );
-
-    ring.rotation.x =
-        Math.PI / 2.4;
-
-    planet.add(
-        ring
-    );
-
-    const secondRing =
-        new THREE.Mesh(
-            new THREE.RingGeometry(
-                radius * 1.05,
-                radius * 1.2,
-                128
-            ),
-            new THREE.MeshBasicMaterial({
-                color: 0x88765d,
-                side: THREE.DoubleSide,
-                transparent: true,
-                opacity: 0.5
-            })
-        );
-
-    secondRing.rotation.x =
-        Math.PI / 2.4;
-
-    planet.add(
-        secondRing
-    );
-}
-
-
-/* =========================================================
-   ORBIT LINES
-   ========================================================= */
-
-function createOrbitLines() {
-
-    orbitObjects.forEach(
-        planet => {
-
-            const distance =
-                planet.userData.distance;
-
-            const points = [];
-
-            for (
-                let i = 0;
-                i <= 160;
-                i++
-            ) {
-
-                const angle =
-                    (i / 160) *
-                    Math.PI *
-                    2;
-
-                points.push(
-                    new THREE.Vector3(
-                        Math.cos(angle) *
-                            distance,
-                        0,
-                        Math.sin(angle) *
-                            distance
-                    )
-                );
-            }
-
-            const geometry =
-                new THREE.BufferGeometry()
-                    .setFromPoints(
-                        points
-                    );
-
-            const material =
-                new THREE.LineBasicMaterial({
-                    color: 0x29445f,
-                    transparent: true,
-                    opacity: 0.38
-                });
-
-            const line =
-                new THREE.LineLoop(
-                    geometry,
-                    material
-                );
-
-            solarSystemGroup.add(
-                line
-            );
-
-            orbitLines.push(
-                line
-            );
-        }
-    );
-}
-
-
-/* =========================================================
-   EARTH LAUNCH ENVIRONMENT
-   ========================================================= */
-
-function initializeLaunchEnvironment() {
-
-    flightGroup =
-        new THREE.Group();
-
-    flightGroup.name =
-        "EarthFlightEnvironment";
-
-    flightGroup.visible = false;
-
-    scene.add(
-        flightGroup
-    );
-
-    /*
-       EARTH GLOBE
-
-       The rocket launches from the
-       top of this globe.
-    */
-
-    const earthGeometry =
-        new THREE.SphereGeometry(
-            45,
-            96,
-            96
-        );
-
-    const earthMaterial =
-        new THREE.MeshStandardMaterial({
-            color: 0x176aa3,
-            roughness: 0.8,
-            metalness: 0
-        });
-
-    earthGlobe =
-        new THREE.Mesh(
-            earthGeometry,
-            earthMaterial
-        );
-
-    earthGlobe.position.set(
-        0,
-        -45,
-        0
-    );
-
-    earthGlobe.receiveShadow = true;
-
-    flightGroup.add(
-        earthGlobe
-    );
-
-    /*
-       LAND MASSES
-       represented by several green
-       regions on the globe.
-    */
-
-    createEarthLand(
-        12,
-        2,
-        10,
-        0.2
-    );
-
-    createEarthLand(
-        -14,
-        5,
-        8,
-        -0.4
-    );
-
-    createEarthLand(
-        5,
-        -8,
-        7,
-        0.8
-    );
-
-    /*
-       ATMOSPHERE
-    */
-
-    const atmosphere =
-        new THREE.Mesh(
-            new THREE.SphereGeometry(
-                46.5,
-                64,
-                64
-            ),
-            new THREE.MeshBasicMaterial({
-                color: 0x3d9eff,
-                transparent: true,
-                opacity: 0.11,
-                side: THREE.BackSide,
-                blending:
-                    THREE.AdditiveBlending
-            })
-        );
-
-    atmosphere.position.copy(
-        earthGlobe.position
-    );
-
-    flightGroup.add(
-        atmosphere
-    );
-
-    /*
-       GROUND / LAUNCH AREA
-    */
-
-    const ground =
-        new THREE.Mesh(
-            new THREE.CylinderGeometry(
-                18,
-                22,
-                0.7,
-                64
-            ),
-            new THREE.MeshStandardMaterial({
-                color: 0x26382c,
                 roughness: 1
             })
         );
+        ring.rotation.x = Math.PI / 2.3;
+        saturn.add(ring);
+    }
 
-    ground.position.y =
-        0;
+    function createStarField() {
+        const positions = new Float32Array(CONFIG.STAR_COUNT * 3);
+        const colors = new Float32Array(CONFIG.STAR_COUNT * 3);
 
-    ground.receiveShadow = true;
+        for (let i = 0; i < CONFIG.STAR_COUNT; i++) {
+            const radius = 700 + Math.random() * 2200;
+            const theta = Math.random() * Math.PI * 2;
+            const phi = Math.acos(2 * Math.random() - 1);
 
-    flightGroup.add(
-        ground
-    );
+            positions[i * 3] = radius * Math.sin(phi) * Math.cos(theta);
+            positions[i * 3 + 1] = radius * Math.cos(phi);
+            positions[i * 3 + 2] = radius * Math.sin(phi) * Math.sin(theta);
 
-    /*
-       RUNWAY
-    */
+            const brightness = 0.45 + Math.random() * 0.55;
+            colors[i * 3] = brightness;
+            colors[i * 3 + 1] = brightness;
+            colors[i * 3 + 2] = 0.9 + Math.random() * 0.1;
+        }
 
-    const runway =
-        new THREE.Mesh(
-            new THREE.BoxGeometry(
-                16,
-                0.18,
-                70
-            ),
-            new THREE.MeshStandardMaterial({
-                color: 0x262b30,
-                roughness: 0.9
-            })
-        );
+        const geometry = new THREE.BufferGeometry();
+        geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+        geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
 
-    runway.position.set(
-        0,
-        0.4,
-        28
-    );
+        const material = new THREE.PointsMaterial({
+            size: 1.25,
+            vertexColors: true,
+            sizeAttenuation: true
+        });
 
-    flightGroup.add(
-        runway
-    );
+        scene.add(new THREE.Points(geometry, material));
+    }
 
-    /*
-       RUNWAY MARKINGS
-    */
+    function getPlanetAngle(name) {
+        const data = PLANETS[name];
+        if (!data) return 0;
+        return data.phase + state.simDays / data.period * Math.PI * 2;
+    }
 
-    for (
-        let z = -2;
-        z < 65;
-        z += 7
-    ) {
+    function getPlanetPositionKm(name) {
+        const data = PLANETS[name];
+        if (!data) return new THREE.Vector3();
 
-        const mark =
-            new THREE.Mesh(
-                new THREE.BoxGeometry(
-                    1.2,
-                    0.08,
-                    3
-                ),
-                new THREE.MeshBasicMaterial({
-                    color: 0xffffff
-                })
-            );
-
-        mark.position.set(
+        const angle = getPlanetAngle(name);
+        return new THREE.Vector3(
+            Math.cos(angle) * data.a * CONFIG.AU_KM,
             0,
-            0.52,
-            z
-        );
-
-        flightGroup.add(
-            mark
+            Math.sin(angle) * data.a * CONFIG.AU_KM
         );
     }
 
-    /*
-       LAUNCH PAD
-    */
+    function updatePlanetPositions() {
+        for (const [name, mesh] of planetVisuals) {
+            const data = PLANETS[name];
+            const angle = getPlanetAngle(name);
+            const distance = data.a * CONFIG.AU_SCALE;
 
-    launchPad =
-        new THREE.Mesh(
-            new THREE.CylinderGeometry(
-                8,
-                9,
-                0.7,
-                64
+            mesh.position.set(
+                Math.cos(angle) * distance,
+                0,
+                Math.sin(angle) * distance
+            );
+
+            mesh.rotation.y += 0.001;
+        }
+
+        const earth = planetVisuals.get("Earth");
+        const moon = celestialBodies.get("Moon");
+
+        if (earth && moon) {
+            const angle = MOON.phase +
+                state.simDays / MOON.period * Math.PI * 2;
+
+            moon.position.set(
+                Math.cos(angle) * 4.3,
+                0.2,
+                Math.sin(angle) * 4.3
+            );
+        }
+    }
+
+    // ----------------------------------------------------------
+    // 6. EARTH LAUNCH COMPLEX
+    // ----------------------------------------------------------
+
+    function createLaunchEnvironment() {
+        // Earth is centered below the launchpad so its upper surface
+        // is approximately y = 0 in launch-scene coordinates.
+        const earth = new THREE.Mesh(
+            new THREE.SphereGeometry(
+                CONFIG.EARTH_VISUAL_RADIUS,
+                64,
+                40
             ),
             new THREE.MeshStandardMaterial({
-                color: 0x686f75,
-                metalness: 0.3,
-                roughness: 0.7
+                color: 0x245fa4,
+                roughness: 0.95,
+                metalness: 0
             })
         );
 
-    launchPad.position.y =
-        0.75;
+        earth.position.set(0, -CONFIG.EARTH_VISUAL_RADIUS, 0);
+        earth.receiveShadow = true;
+        launchGroup.add(earth);
+        earthGlobe = earth;
 
-    launchPad.castShadow = true;
-    launchPad.receiveShadow = true;
-
-    flightGroup.add(
-        launchPad
-    );
-
-    /*
-       PAD CENTER
-    */
-
-    const padCenter =
-        new THREE.Mesh(
-            new THREE.CylinderGeometry(
-                5.5,
-                5.5,
-                0.78,
-                64
-            ),
-            new THREE.MeshStandardMaterial({
-                color: 0x343a40,
-                roughness: 0.8
+        const atmosphere = new THREE.Mesh(
+            new THREE.SphereGeometry(46.5, 48, 32),
+            new THREE.MeshBasicMaterial({
+                color: 0x48aaff,
+                transparent: true,
+                opacity: 0.17,
+                side: THREE.BackSide,
+                depthWrite: false
             })
         );
+        atmosphere.position.copy(earth.position);
+        launchGroup.add(atmosphere);
 
-    padCenter.position.y =
-        0.8;
-
-    flightGroup.add(
-        padCenter
-    );
-
-    /*
-       LAUNCH TOWER
-    */
-
-    createLaunchTower();
-
-    /*
-       FLOOD LIGHTS
-    */
-
-    const lightPositions = [
-        [-10, 7, -10],
-        [10, 7, -10],
-        [-10, 7, 10],
-        [10, 7, 10]
-    ];
-
-    lightPositions.forEach(
-        position => {
-
-            const light =
-                new THREE.PointLight(
-                    0xffd6a0,
-                    4,
-                    28
-                );
-
-            light.position.set(
-                position[0],
-                position[1],
-                position[2]
-            );
-
-            flightGroup.add(
-                light
-            );
-        }
-    );
-
-    earthLaunchEnvironment =
-        flightGroup;
-}
-
-
-/* =========================================================
-   EARTH LAND PATCH
-   ========================================================= */
-
-function createEarthLand(
-    x,
-    y,
-    size,
-    rotation
-) {
-
-    const geometry =
-        new THREE.SphereGeometry(
-            size,
-            24,
-            12
+        // Simple terrain and pad area.
+        const ground = new THREE.Mesh(
+            new THREE.CylinderGeometry(48, 48, 1.5, 64),
+            new THREE.MeshStandardMaterial({
+                color: 0x233a32,
+                roughness: 1
+            })
         );
+        ground.position.y = -0.6;
+        ground.receiveShadow = true;
+        launchGroup.add(ground);
 
-    const material =
-        new THREE.MeshStandardMaterial({
-            color: 0x287a45,
-            roughness: 1
+        const pad = new THREE.Mesh(
+            new THREE.CylinderGeometry(7, 8, 1.2, 32),
+            new THREE.MeshStandardMaterial({
+                color: 0x697586,
+                roughness: 0.85,
+                metalness: 0.35
+            })
+        );
+        pad.position.set(0, 0.2, 0);
+        pad.receiveShadow = true;
+        launchGroup.add(pad);
+        launchPad = pad;
+
+        // Pad markings.
+        const markingMaterial = new THREE.MeshBasicMaterial({
+            color: 0xe5edf7
         });
 
-    const land =
-        new THREE.Mesh(
-            geometry,
-            material
-        );
-
-    land.position.set(
-        x,
-        -45 + y,
-        Math.sin(x) * 12
-    );
-
-    land.scale.set(
-        1.5,
-        0.25,
-        1
-    );
-
-    land.rotation.z =
-        rotation;
-
-    flightGroup.add(
-        land
-    );
-}
-
-
-/* =========================================================
-   LAUNCH TOWER
-   ========================================================= */
-
-function createLaunchTower() {
-
-    launchTower =
-        new THREE.Group();
-
-    const metal =
-        new THREE.MeshStandardMaterial({
-            color: 0x64717a,
-            metalness: 0.55,
-            roughness: 0.48
-        });
-
-    /*
-       FOUR VERTICAL LEGS
-    */
-
-    for (
-        let i = 0;
-        i < 4;
-        i++
-    ) {
-
-        const angle =
-            i *
-            Math.PI /
-            2;
-
-        const leg =
-            new THREE.Mesh(
-                new THREE.BoxGeometry(
-                    0.55,
-                    28,
-                    0.55
-                ),
-                metal
+        for (let i = -2; i <= 2; i++) {
+            const stripe = new THREE.Mesh(
+                new THREE.BoxGeometry(0.16, 0.025, 9),
+                markingMaterial
             );
-
-        leg.position.set(
-            Math.cos(angle) * 7.5,
-            14.5,
-            Math.sin(angle) * 7.5
-        );
-
-        leg.castShadow = true;
-
-        launchTower.add(
-            leg
-        );
-    }
-
-    /*
-       CROSS BEAMS
-    */
-
-    for (
-        let y = 5;
-        y <= 25;
-        y += 4
-    ) {
-
-        const beam =
-            new THREE.Mesh(
-                new THREE.BoxGeometry(
-                    16,
-                    0.35,
-                    0.35
-                ),
-                metal
-            );
-
-        beam.position.y =
-            y;
-
-        launchTower.add(
-            beam
-        );
-    }
-
-    /*
-       SIDE ARMS
-    */
-
-    for (
-        let y = 8;
-        y <= 24;
-        y += 5
-    ) {
-
-        const arm =
-            new THREE.Mesh(
-                new THREE.BoxGeometry(
-                    0.3,
-                    0.3,
-                    5
-                ),
-                metal
-            );
-
-        arm.position.set(
-            0,
-            y,
-            4.5
-        );
-
-        launchTower.add(
-            arm
-        );
-    }
-
-    flightGroup.add(
-        launchTower
-    );
-}
-
-
-/* =========================================================
-   SHOW / HIDE FLIGHT ENVIRONMENT
-   ========================================================= */
-
-function setFlightEnvironment(
-    visible
-) {
-
-    if (flightGroup) {
-        flightGroup.visible =
-            visible;
-    }
-
-    if (solarSystemGroup) {
-        solarSystemGroup.visible =
-            !visible;
-    }
-}
-
-
-/* =========================================================
-   INTERFACE
-   ========================================================= */
-
-function initializeInterface() {
-
-    document
-        .querySelectorAll(".nav-button")
-        .forEach(button => {
-
-            button.addEventListener(
-                "click",
-                () => {
-
-                    const section =
-                        button.dataset.section;
-
-                    activateSection(
-                        section
-                    );
-
-                    document
-                        .querySelectorAll(
-                            ".nav-button"
-                        )
-                        .forEach(
-                            item => {
-                                item.classList.remove(
-                                    "active"
-                                );
-                            }
-                        );
-
-                    button.classList.add(
-                        "active"
-                    );
-                }
-            );
-        });
-
-
-    document
-        .querySelectorAll(".close-panel")
-        .forEach(button => {
-
-            button.addEventListener(
-                "click",
-                () => {
-
-                    const panel =
-                        button.closest(
-                            ".interface-panel"
-                        );
-
-                    if (panel) {
-                        panel.classList.remove(
-                            "visible"
-                        );
-                    }
-                }
-            );
-        });
-
-
-    document
-        .querySelectorAll(".close-large-panel")
-        .forEach(button => {
-
-            button.addEventListener(
-                "click",
-                () => {
-
-                    const panel =
-                        button.closest(
-                            ".large-panel"
-                        );
-
-                    if (panel) {
-                        panel.classList.remove(
-                            "visible"
-                        );
-                    }
-                }
-            );
-        });
-
-
-    const pauseButton =
-        document.getElementById(
-            "pause-button"
-        );
-
-    if (pauseButton) {
-
-        pauseButton.addEventListener(
-            "click",
-            togglePause
-        );
-    }
-
-
-    const settingsButton =
-        document.getElementById(
-            "settings-button"
-        );
-
-    if (settingsButton) {
-
-        settingsButton.addEventListener(
-            "click",
-            () => {
-
-                showNotification(
-                    "SYSTEM",
-                    "Flight systems are operating normally."
-                );
-            }
-        );
-    }
-
-
-    document
-        .querySelectorAll("[data-speed]")
-        .forEach(button => {
-
-            button.addEventListener(
-                "click",
-                () => {
-
-                    state.simulationSpeed =
-                        Number(
-                            button.dataset.speed
-                        );
-
-                    state.paused =
-                        state.simulationSpeed === 0;
-
-                    updatePauseButton();
-                }
-            );
-        });
-
-
-    const throttle =
-        document.getElementById(
-            "throttle"
-        );
-
-    if (throttle) {
-
-        throttle.addEventListener(
-            "input",
-            event => {
-
-                state.throttle =
-                    Number(
-                        event.target.value
-                    );
-
-                updateThrottleDisplay();
-            }
-        );
-    }
-
-
-    const ignition =
-        document.getElementById(
-            "ignition-button"
-        );
-
-    if (ignition) {
-
-        ignition.addEventListener(
-            "click",
-            ignitionSequence
-        );
-    }
-
-
-    const stage =
-        document.getElementById(
-            "stage-button"
-        );
-
-    if (stage) {
-
-        stage.addEventListener(
-            "click",
-            separateStage
-        );
-    }
-
-
-    const rcs =
-        document.getElementById(
-            "rcs-button"
-        );
-
-    if (rcs) {
-
-        rcs.addEventListener(
-            "click",
-            toggleRCS
-        );
-    }
-
-
-    const gear =
-        document.getElementById(
-            "landing-gear-button"
-        );
-
-    if (gear) {
-
-        gear.addEventListener(
-            "click",
-            toggleLandingGear
-        );
-    }
-
-
-    const launch =
-        document.getElementById(
-            "launch-rocket"
-        );
-
-    if (launch) {
-
-        launch.addEventListener(
-            "click",
-            prepareLaunch
-        );
-    }
-
-
-    document
-        .querySelectorAll(".mission-card")
-        .forEach(card => {
-
-            card.addEventListener(
-                "click",
-                () => {
-
-                    startMission(
-                        card.dataset.mission
-                    );
-                }
-            );
-        });
-
-
-    const docking =
-        document.getElementById(
-            "station-docking-button"
-        );
-
-    if (docking) {
-
-        docking.addEventListener(
-            "click",
-            () => {
-
-                showNotification(
-                    "DOCKING",
-                    "Docking approach initiated."
-                );
-            }
-        );
-    }
-
-
-    window.addEventListener(
-        "keydown",
-        handleKeyboard
-    );
-}
-
-
-/* =========================================================
-   SECTION CONTROL
-   ========================================================= */
-
-function activateSection(
-    section
-) {
-
-    state.activeSection =
-        section;
-
-    document
-        .querySelectorAll(
-            ".interface-panel, .large-panel"
-        )
-        .forEach(panel => {
-
-            panel.classList.remove(
-                "visible"
-            );
-        });
-
-    const flightHUD =
-        document.getElementById(
-            "flight-hud"
-        );
-
-    if (flightHUD) {
-        flightHUD.classList.remove(
-            "visible"
-        );
-    }
-
-
-    if (section === "solar-system") {
-
-        setFlightEnvironment(false);
-
-        document
-            .getElementById(
-                "solar-system-panel"
-            )
-            ?.classList.add(
-                "visible"
-            );
-
-        updateMode(
-            "SOLAR SYSTEM"
-        );
-
-        cameraYaw = 0.65;
-        cameraPitch = 0.25;
-        cameraDistance = 180;
-
-        updateCameraPosition();
-
-        return;
-    }
-
-
-    if (section === "planet-explorer") {
-
-        setFlightEnvironment(false);
-
-        document
-            .getElementById(
-                "planet-panel"
-            )
-            ?.classList.add(
-                "visible"
-            );
-
-        updateMode(
-            "PLANET EXPLORER"
-        );
-
-        selectPlanet(
-            "Earth"
-        );
-
-        return;
-    }
-
-
-    if (section === "rocket-builder") {
-
-        setFlightEnvironment(false);
-
-        document
-            .getElementById(
-                "rocket-builder-panel"
-            )
-            ?.classList.add(
-                "visible"
-            );
-
-        updateMode(
-            "ROCKET BUILDER"
-        );
-
-        return;
-    }
-
-
-    if (section === "missions") {
-
-        setFlightEnvironment(false);
-
-        document
-            .getElementById(
-                "missions-panel"
-            )
-            ?.classList.add(
-                "visible"
-            );
-
-        updateMode(
-            "MISSION CONTROL"
-        );
-
-        return;
-    }
-
-
-    if (section === "station") {
-
-        setFlightEnvironment(false);
-
-        document
-            .getElementById(
-                "station-panel"
-            )
-            ?.classList.add(
-                "visible"
-            );
-
-        updateMode(
-            "ORBITAL STATION"
-        );
-
-        return;
-    }
-
-
-    if (section === "theories") {
-
-        setFlightEnvironment(false);
-
-        document
-            .getElementById(
-                "theories-panel"
-            )
-            ?.classList.add(
-                "visible"
-            );
-
-        updateMode(
-            "SPACE THEORIES"
-        );
-
-        return;
-    }
-
-
-    if (section === "flight") {
-
-        setFlightEnvironment(true);
-
-        if (flightHUD) {
-            flightHUD.classList.add(
-                "visible"
-            );
+            stripe.position.set(i * 1.1, 0.82, 0);
+            launchGroup.add(stripe);
         }
 
-        updateMode(
-            "FLIGHT CONTROL"
+        // Flame trench.
+        const trench = new THREE.Mesh(
+            new THREE.BoxGeometry(5, 0.5, 13),
+            new THREE.MeshStandardMaterial({
+                color: 0x111827,
+                roughness: 1
+            })
         );
+        trench.position.set(0, -0.15, 5);
+        launchGroup.add(trench);
 
-        if (!rocket) {
-            createFlightRocket();
-        }
+        createLaunchTower();
+        createLaunchLighting();
+        createLaunchHorizon();
 
-        cameraYaw = 0.65;
-        cameraPitch = 0.25;
-        cameraDistance = 32;
-
-        updateCameraPosition();
-
-        return;
-    }
-}
-
-
-/* =========================================================
-   MODE
-   ========================================================= */
-
-function updateMode(
-    text
-) {
-
-    setText(
-        "current-mode",
-        text
-    );
-}
-
-
-/* =========================================================
-   PLANET SELECTION
-   ========================================================= */
-
-function selectPlanet(
-    name
-) {
-
-    const data =
-        planets[name];
-
-    if (!data) {
-        return;
+        launchGroup.visible = false;
     }
 
-    state.selectedPlanet =
-        name;
-
-    setText(
-        "planet-name",
-        name.toUpperCase()
-    );
-
-    setText(
-        "planet-type",
-        data.type
-    );
-
-    setText(
-        "planet-description",
-        data.description
-    );
-
-    setText(
-        "planet-diameter",
-        data.diameter
-    );
-
-    setText(
-        "planet-mass",
-        data.mass
-    );
-
-    setText(
-        "planet-gravity",
-        data.gravity
-    );
-
-    setText(
-        "planet-distance",
-        data.distance
-    );
-
-    setText(
-        "planet-rotation",
-        data.rotation
-    );
-
-    setText(
-        "planet-orbit",
-        data.orbit
-    );
-
-    setText(
-        "planet-temperature",
-        data.temperature
-    );
-
-    setText(
-        "planet-moons",
-        data.moons
-    );
-
-    focusPlanet(
-        name
-    );
-}
-
-
-/* =========================================================
-   FOCUS PLANET
-   ========================================================= */
-
-function focusPlanet(
-    name
-) {
-
-    const planet =
-        celestialBodies[name];
-
-    if (!planet) {
-        return;
-    }
-
-    const radius =
-        planet.userData.radius;
-
-    cameraDistance =
-        Math.max(
-            radius * 5,
-            15
-        );
-
-    cameraYaw = 0.6;
-    cameraPitch = 0.2;
-
-    camera.position.set(
-        planet.position.x +
-            cameraDistance,
-        planet.position.y +
-            cameraDistance * 0.45,
-        planet.position.z +
-            cameraDistance
-    );
-
-    camera.lookAt(
-        planet.position
-    );
-}
-
-
-/* =========================================================
-   SCENE CLICK
-   ========================================================= */
-
-function handleSceneClick(
-    event
-) {
-
-    /*
-       IMPORTANT:
-
-       Only the actual celestial-body meshes
-       are checked here.
-
-       The rocket is NOT checked.
-       Therefore clicking the rocket cannot
-       automatically change the mode.
-    */
-
-    if (
-        state.activeSection === "flight"
-    ) {
-        return;
-    }
-
-    if (!renderer || !camera) {
-        return;
-    }
-
-    const rect =
-        renderer.domElement.getBoundingClientRect();
-
-    mouse.x =
-        (
-            (event.clientX - rect.left) /
-            rect.width
-        ) * 2 - 1;
-
-    mouse.y =
-        -(
-            (event.clientY - rect.top) /
-            rect.height
-        ) * 2 + 1;
-
-    raycaster.setFromCamera(
-        mouse,
-        camera
-    );
-
-    const bodies =
-        Object.values(
-            celestialBodies
-        );
-
-    const hits =
-        raycaster.intersectObjects(
-            bodies,
-            false
-        );
-
-    if (
-        hits.length === 0
-    ) {
-        return;
-    }
-
-    const body =
-        hits[0].object;
-
-    const name =
-        body.userData.name;
-
-    if (!name) {
-        return;
-    }
-
-    selectPlanet(
-        name
-    );
-
-    const panel =
-        document.getElementById(
-            "planet-panel"
-        );
-
-    if (panel) {
-        panel.classList.add(
-            "visible"
-        );
-    }
-}
-
-
-/* =========================================================
-   ROCKET BUILDER
-   ========================================================= */
-
-function initializeBuilder() {
-
-    document
-        .querySelectorAll(".part-button")
-        .forEach(button => {
-
-            button.addEventListener(
-                "click",
-                () => {
-
-                    addRocketPart(
-                        button.dataset.part
-                    );
-                }
-            );
-        });
-
-
-    document
-        .getElementById("clear-rocket")
-        ?.addEventListener(
-            "click",
-            clearRocket
-        );
-
-
-    document
-        .getElementById("save-rocket")
-        ?.addEventListener(
-            "click",
-            saveRocket
-        );
-
-
-    updateBuilderDisplay();
-}
-
-
-/* =========================================================
-   ADD PART
-   ========================================================= */
-
-function addRocketPart(
-    type
-) {
-
-    state.rocketParts.push(
-        type
-    );
-
-    updateBuilderDisplay();
-
-    showNotification(
-        "ROCKET BUILDER",
-        formatPartName(type) +
-        " added."
-    );
-}
-
-
-/* =========================================================
-   FORMAT PART
-   ========================================================= */
-
-function formatPartName(
-    type
-) {
-
-    return type
-        .replaceAll("-", " ")
-        .toUpperCase();
-}
-
-
-/* =========================================================
-   BUILDER DISPLAY
-   ========================================================= */
-
-function updateBuilderDisplay() {
-
-    const container =
-        document.getElementById(
-            "builder-rocket"
-        );
-
-    if (!container) {
-        return;
-    }
-
-    container.innerHTML = "";
-
-    if (
-        state.rocketParts.length === 0
-    ) {
-
-        container.innerHTML =
-            '<div class="builder-empty">SELECT ROCKET PARTS</div>';
-
-        updateVehicleData();
-
-        return;
-    }
-
-    const parts =
-        [...state.rocketParts]
-            .reverse();
-
-    parts.forEach(
-        type => {
-
-            const element =
-                document.createElement(
-                    "div"
-                );
-
-            element.className =
-                "rocket-part";
-
-            createBuilderPartVisual(
-                element,
-                type
-            );
-
-            container.appendChild(
-                element
-            );
-        }
-    );
-
-    updateVehicleData();
-}
-
-
-/* =========================================================
-   BUILDER PART VISUALS
-   ========================================================= */
-
-function createBuilderPartVisual(
-    element,
-    type
-) {
-
-    if (type === "nose") {
-
-        element.classList.add(
-            "rocket-nose"
-        );
-
-    } else if (type === "capsule") {
-
-        element.classList.add(
-            "rocket-capsule"
-        );
-
-        const window =
-            document.createElement(
-                "div"
-            );
-
-        window.className =
-            "rocket-window";
-
-        element.appendChild(
-            window
-        );
-
-    } else if (
-        type === "fuel-small"
-    ) {
-
-        element.classList.add(
-            "rocket-tank"
-        );
-
-    } else if (
-        type === "fuel-large"
-    ) {
-
-        element.classList.add(
-            "rocket-tank",
-            "large"
-        );
-
-    } else if (
-        type === "engine" ||
-        type === "vacuum-engine"
-    ) {
-
-        element.classList.add(
-            "rocket-engine"
-        );
-
-        const nozzle =
-            document.createElement(
-                "div"
-            );
-
-        nozzle.className =
-            "rocket-nozzle";
-
-        element.appendChild(
-            nozzle
-        );
-
-    } else if (
-        type === "booster"
-    ) {
-
-        element.classList.add(
-            "rocket-booster"
-        );
-
-    } else if (
-        type === "decoupler"
-    ) {
-
-        element.classList.add(
-            "rocket-decoupler"
-        );
-
-    } else if (
-        type === "heatshield"
-    ) {
-
-        element.classList.add(
-            "rocket-heatshield"
-        );
-
-    } else if (
-        type === "landing-legs"
-    ) {
-
-        element.classList.add(
-            "rocket-legs"
-        );
-
-    } else if (
-        type === "solar-panel"
-    ) {
-
-        element.classList.add(
-            "rocket-solar-panel"
-        );
-
-    } else {
-
-        element.style.width = "65px";
-        element.style.height = "24px";
-        element.style.background = "#697782";
-        element.style.border =
-            "1px solid #aab5bd";
-    }
-}
-
-
-/* =========================================================
-   VEHICLE DATA
-   ========================================================= */
-
-function updateVehicleData() {
-
-    const parts =
-        state.rocketParts;
-
-    const tanks =
-        parts.filter(
-            part =>
-                part === "fuel-small" ||
-                part === "fuel-large"
-        ).length;
-
-    const engines =
-        parts.filter(
-            part =>
-                part === "engine" ||
-                part === "vacuum-engine" ||
-                part === "booster"
-        ).length;
-
-    const mass =
-        80 +
-        parts.length * 2.5 +
-        tanks * 12;
-
-    const fuel =
-        tanks * 500;
-
-    const thrust =
-        engines * 850;
-
-    const dv =
-        fuel > 0
-            ? Math.round(
-                9.81 *
-                Math.log(
-                    (mass + fuel) /
-                    mass
-                ) *
-                100
-            )
-            : 0;
-
-    setText(
-        "vehicle-parts",
-        parts.length
-    );
-
-    setText(
-        "vehicle-stages",
-        calculateStages()
-    );
-
-    setText(
-        "vehicle-mass",
-        mass.toFixed(1) + " t"
-    );
-
-    setText(
-        "vehicle-fuel",
-        fuel + " kg"
-    );
-
-    setText(
-        "vehicle-thrust",
-        thrust + " kN"
-    );
-
-    setText(
-        "vehicle-dv",
-        dv + " m/s"
-    );
-}
-
-
-/* =========================================================
-   STAGES
-   ========================================================= */
-
-function calculateStages() {
-
-    if (
-        state.rocketParts.length === 0
-    ) {
-        return 0;
-    }
-
-    const decouplers =
-        state.rocketParts.filter(
-            part =>
-                part === "decoupler"
-        ).length;
-
-    return decouplers + 1;
-}
-
-
-/* =========================================================
-   CLEAR ROCKET
-   ========================================================= */
-
-function clearRocket() {
-
-    state.rocketParts = [];
-
-    updateBuilderDisplay();
-
-    showNotification(
-        "ROCKET BUILDER",
-        "Vehicle assembly cleared."
-    );
-}
-
-
-/* =========================================================
-   SAVE ROCKET
-   ========================================================= */
-
-function saveRocket() {
-
-    try {
-
-        localStorage.setItem(
-            "esHaqXRocket",
-            JSON.stringify(
-                state.rocketParts
-            )
-        );
-
-        showNotification(
-            "ROCKET BUILDER",
-            "Rocket design saved locally."
-        );
-
-    } catch (error) {
-
-        showNotification(
-            "SYSTEM",
-            "Could not save the design."
-        );
-    }
-}
-
-
-/* =========================================================
-   PREPARE LAUNCH
-   ========================================================= */
-
-function prepareLaunch() {
-
-    if (
-        state.rocketParts.length === 0
-    ) {
-
-        showNotification(
-            "LAUNCH CONTROL",
-            "Add rocket parts before launch."
-        );
-
-        return;
-    }
-
-    resetFlight();
-
-    state.flightActive = true;
-
-    activateSection(
-        "flight"
-    );
-
-    createFlightRocket();
-
-    showNotification(
-        "LAUNCH CONTROL",
-        "Rocket positioned on the Earth launchpad."
-    );
-
-    startCountdown();
-}
-
-
-/* =========================================================
-   RESET FLIGHT
-   ========================================================= */
-
-function resetFlight() {
-
-    state.ignition = false;
-    state.stage = 1;
-
-    state.missionTime = 0;
-
-    state.altitude = 0;
-
-    state.velocity = 0;
-
-    state.verticalVelocity = 0;
-
-    state.apoapsis = 0;
-
-    state.periapsis = 0;
-
-    state.fuel = 100;
-
-    state.rocketThrust = 0;
-
-    rocketVelocity = 0;
-
-    stopEngineFlames();
-
-    if (countdownTimer) {
-
-        clearInterval(
-            countdownTimer
-        );
-
-        countdownTimer = null;
-    }
-
-    state.countdownRunning = false;
-}
-
-
-/* =========================================================
-   COUNTDOWN
-   ========================================================= */
-
-function startCountdown() {
-
-    const overlay =
-        document.getElementById(
-            "countdown-overlay"
-        );
-
-    const number =
-        document.getElementById(
-            "countdown-number"
-        );
-
-    const status =
-        document.getElementById(
-            "countdown-status"
-        );
-
-    if (!overlay || !number) {
-        return;
-    }
-
-    overlay.classList.add(
-        "visible"
-    );
-
-    state.countdownRunning = true;
-
-    let count = 5;
-
-    number.textContent =
-        count;
-
-    if (status) {
-        status.textContent =
-            "LAUNCH SEQUENCE";
-    }
-
-    countdownTimer =
-        setInterval(
-            () => {
-
-                count--;
-
-                if (count <= 0) {
-
-                    clearInterval(
-                        countdownTimer
-                    );
-
-                    countdownTimer = null;
-
-                    state.countdownRunning =
-                        false;
-
-                    overlay.classList.remove(
-                        "visible"
-                    );
-
-                    ignitionSequence();
-
-                    return;
-                }
-
-                number.textContent =
-                    count;
-
-                if (status) {
-
-                    status.textContent =
-                        count <= 2
-                            ? "FINAL LAUNCH SEQUENCE"
-                            : "LAUNCH SEQUENCE";
-                }
-
-            },
-            1000
-        );
-}
-
-
-/* =========================================================
-   CREATE FLIGHT ROCKET
-   ========================================================= */
-
-function createFlightRocket() {
-
-    if (rocket) {
-
-        scene.remove(
-            rocket
-        );
-
-        rocket = null;
-    }
-
-    engineFlames = [];
-    engineLights = [];
-    stageGroups = [];
-
-    rocket =
-        new THREE.Group();
-
-    rocket.name =
-        "ESHAQX_ROCKET";
-
-    rocket.userData.isRocket =
-        true;
-
-    rocketCore =
-        new THREE.Group();
-
-    rocket.add(
-        rocketCore
-    );
-
-    /*
-       MAIN MATERIALS
-    */
-
-    const whiteMetal =
-        new THREE.MeshStandardMaterial({
-            color: 0xdfe7ec,
-            metalness: 0.42,
-            roughness: 0.36
-        });
-
-    const darkMetal =
-        new THREE.MeshStandardMaterial({
-            color: 0x242b32,
+    function createLaunchTower() {
+        launchTower = new THREE.Group();
+
+        const steel = new THREE.MeshStandardMaterial({
+            color: 0x8594a8,
             metalness: 0.65,
-            roughness: 0.3
-        });
-
-    const silver =
-        new THREE.MeshStandardMaterial({
-            color: 0x9da8af,
-            metalness: 0.5,
             roughness: 0.4
         });
 
-    /*
-       MAIN BODY
-    */
+        const darkSteel = new THREE.MeshStandardMaterial({
+            color: 0x354357,
+            metalness: 0.5,
+            roughness: 0.6
+        });
 
-    const body =
-        new THREE.Mesh(
-            new THREE.CylinderGeometry(
-                2.35,
-                2.35,
-                13,
-                48
-            ),
-            whiteMetal
-        );
+        const towerX = -10;
+        const towerZ = 0;
 
-    body.position.y =
-        9;
-
-    body.castShadow = true;
-
-    rocketCore.add(
-        body
-    );
-
-    /*
-       LOWER TANK
-    */
-
-    const lowerTank =
-        new THREE.Mesh(
-            new THREE.CylinderGeometry(
-                2.45,
-                2.45,
-                7,
-                48
-            ),
-            silver
-        );
-
-    lowerTank.position.y =
-        2;
-
-    lowerTank.castShadow = true;
-
-    rocketCore.add(
-        lowerTank
-    );
-
-    /*
-       BODY BANDS
-    */
-
-    [5.5, 12.5].forEach(
-        y => {
-
-            const band =
-                new THREE.Mesh(
-                    new THREE.CylinderGeometry(
-                        2.48,
-                        2.48,
-                        0.45,
-                        48
-                    ),
-                    darkMetal
+        // Four vertical supports.
+        for (const xOffset of [-1.4, 1.4]) {
+            for (const zOffset of [-1.4, 1.4]) {
+                const post = new THREE.Mesh(
+                    new THREE.BoxGeometry(0.35, 24, 0.35),
+                    steel
                 );
-
-            band.position.y =
-                y;
-
-            rocketCore.add(
-                band
-            );
-        }
-    );
-
-    /*
-       CAPSULE
-    */
-
-    const capsule =
-        new THREE.Mesh(
-            new THREE.CylinderGeometry(
-                2.05,
-                2.32,
-                3,
-                48
-            ),
-            silver
-        );
-
-    capsule.position.y =
-        17;
-
-    rocketCore.add(
-        capsule
-    );
-
-    /*
-       CAPSULE WINDOW
-    */
-
-    const windowMesh =
-        new THREE.Mesh(
-            new THREE.SphereGeometry(
-                0.52,
-                32,
-                16
-            ),
-            new THREE.MeshStandardMaterial({
-                color: 0x061b2a,
-                metalness: 0.7,
-                roughness: 0.18
-            })
-        );
-
-    windowMesh.scale.y =
-        0.45;
-
-    windowMesh.position.set(
-        0,
-        17,
-        2.1
-    );
-
-    rocketCore.add(
-        windowMesh
-    );
-
-    /*
-       NOSE CONE
-    */
-
-    const nose =
-        new THREE.Mesh(
-            new THREE.ConeGeometry(
-                2.35,
-                4.5,
-                48
-            ),
-            whiteMetal
-        );
-
-    nose.position.y =
-        20.75;
-
-    nose.castShadow = true;
-
-    rocketCore.add(
-        nose
-    );
-
-    /*
-       ENGINE MOUNT
-    */
-
-    const mount =
-        new THREE.Mesh(
-            new THREE.CylinderGeometry(
-                2.7,
-                2.7,
-                1,
-                48
-            ),
-            darkMetal
-        );
-
-    mount.position.y =
-        -1.6;
-
-    rocketCore.add(
-        mount
-    );
-
-    /*
-       ENGINE
-    */
-
-    const engine =
-        new THREE.Mesh(
-            new THREE.CylinderGeometry(
-                1.45,
-                1.9,
-                3.3,
-                48
-            ),
-            darkMetal
-        );
-
-    engine.position.y =
-        -3.5;
-
-    engine.castShadow = true;
-
-    rocketCore.add(
-        engine
-    );
-
-    /*
-       ENGINE NOZZLE
-    */
-
-    const nozzle =
-        new THREE.Mesh(
-            new THREE.CylinderGeometry(
-                1.85,
-                1.25,
-                2.5,
-                48,
-                1,
-                false
-            ),
-            darkMetal
-        );
-
-    nozzle.position.y =
-        -6;
-
-    rocketCore.add(
-        nozzle
-    );
-
-    /*
-       FLAME
-    */
-
-    const flame =
-        new THREE.Mesh(
-            new THREE.ConeGeometry(
-                1.2,
-                8,
-                32
-            ),
-            new THREE.MeshBasicMaterial({
-                color: 0x66d8ff,
-                transparent: true,
-                opacity: 0.88,
-                blending:
-                    THREE.AdditiveBlending
-            })
-        );
-
-    flame.position.y =
-        -11;
-
-    flame.visible = false;
-
-    rocketCore.add(
-        flame
-    );
-
-    engineFlames.push(
-        flame
-    );
-
-    /*
-       ENGINE LIGHT
-    */
-
-    const engineLight =
-        new THREE.PointLight(
-            0x55cfff,
-            0,
-            30
-        );
-
-    engineLight.position.y =
-        -8;
-
-    rocketCore.add(
-        engineLight
-    );
-
-    engineLights.push(
-        engineLight
-    );
-
-    /*
-       SIDE BOOSTERS
-    */
-
-    const leftBooster =
-        createBooster(
-            -3.5,
-            darkMetal
-        );
-
-    const rightBooster =
-        createBooster(
-            3.5,
-            darkMetal
-        );
-
-    stageGroups.push(
-        leftBooster
-    );
-
-    stageGroups.push(
-        rightBooster
-    );
-
-    /*
-       FINS
-    */
-
-    for (
-        let i = 0;
-        i < 4;
-        i++
-    ) {
-
-        const angle =
-            i *
-            Math.PI /
-            2;
-
-        const fin =
-            new THREE.Mesh(
-                new THREE.BoxGeometry(
-                    0.3,
-                    4,
-                    2.4
-                ),
-                darkMetal
-            );
-
-        fin.position.set(
-            Math.cos(angle) * 2.7,
-            0.5,
-            Math.sin(angle) * 2.7
-        );
-
-        fin.rotation.y =
-            -angle;
-
-        rocketCore.add(
-            fin
-        );
-    }
-
-    /*
-       BEACON
-    */
-
-    const beacon =
-        new THREE.PointLight(
-            0x66cfff,
-            1.4,
-            15
-        );
-
-    beacon.position.y =
-        16;
-
-    rocketCore.add(
-        beacon
-    );
-
-    /*
-       ROCKET POSITION
-
-       Bottom of engine sits directly
-       above the launch pad.
-    */
-
-    rocket.position.set(
-        0,
-        7.8,
-        0
-    );
-
-    rocket.scale.set(
-        1,
-        1,
-        1
-    );
-
-    scene.add(
-        rocket
-    );
-
-    rocketVelocity = 0;
-
-    cameraYaw = 0.65;
-    cameraPitch = 0.18;
-    cameraDistance = 30;
-
-    updateCameraPosition();
-
-    updateTelemetry();
-}
-
-
-/* =========================================================
-   CREATE BOOSTER
-   ========================================================= */
-
-function createBooster(
-    x,
-    material
-) {
-
-    const group =
-        new THREE.Group();
-
-    group.userData.isBooster =
-        true;
-
-    group.position.x =
-        x;
-
-    const booster =
-        new THREE.Mesh(
-            new THREE.CylinderGeometry(
-                1.05,
-                1.2,
-                12,
-                40
-            ),
-            material
-        );
-
-    booster.position.y =
-        5;
-
-    booster.castShadow = true;
-
-    group.add(
-        booster
-    );
-
-    const boosterNozzle =
-        new THREE.Mesh(
-            new THREE.ConeGeometry(
-                0.8,
-                2,
-                32
-            ),
-            material
-        );
-
-    boosterNozzle.position.y =
-        -2;
-
-    group.add(
-        boosterNozzle
-    );
-
-    const boosterFlame =
-        new THREE.Mesh(
-            new THREE.ConeGeometry(
-                0.75,
-                6,
-                24
-            ),
-            new THREE.MeshBasicMaterial({
-                color: 0xffa53d,
-                transparent: true,
-                opacity: 0.85,
-                blending:
-                    THREE.AdditiveBlending
-            })
-        );
-
-    boosterFlame.position.y =
-        -6;
-
-    boosterFlame.visible = false;
-
-    group.add(
-        boosterFlame
-    );
-
-    group.userData.flame =
-        boosterFlame;
-
-    rocket.add(
-        group
-    );
-
-    return group;
-}
-
-
-/* =========================================================
-   IGNITION
-   ========================================================= */
-
-function ignitionSequence() {
-
-    if (!state.flightActive) {
-
-        showNotification(
-            "ENGINE",
-            "Prepare a launch first."
-        );
-
-        return;
-    }
-
-    if (!rocket) {
-        createFlightRocket();
-    }
-
-    if (state.ignition) {
-        return;
-    }
-
-    state.ignition = true;
-
-    if (state.throttle < 60) {
-        state.throttle = 80;
-    }
-
-    const throttle =
-        document.getElementById(
-            "throttle"
-        );
-
-    if (throttle) {
-        throttle.value =
-            state.throttle;
-    }
-
-    startEngineFlames();
-
-    showNotification(
-        "ENGINE IGNITION",
-        "Main engines ignited. LIFTOFF!"
-    );
-
-    updateThrottleDisplay();
-}
-
-
-/* =========================================================
-   ENGINE FLAMES
-   ========================================================= */
-
-function startEngineFlames() {
-
-    engineFlames.forEach(
-        flame => {
-            flame.visible = true;
-        }
-    );
-
-    engineLights.forEach(
-        light => {
-            light.intensity = 2.5;
-        }
-    );
-
-    stageGroups.forEach(
-        group => {
-
-            if (
-                group.userData.flame
-            ) {
-
-                group.userData.flame.visible =
-                    true;
-            }
-        }
-    );
-}
-
-
-function stopEngineFlames() {
-
-    engineFlames.forEach(
-        flame => {
-            flame.visible = false;
-        }
-    );
-
-    engineLights.forEach(
-        light => {
-            light.intensity = 0;
-        }
-    );
-
-    stageGroups.forEach(
-        group => {
-
-            if (
-                group.userData.flame
-            ) {
-
-                group.userData.flame.visible =
-                    false;
-            }
-        }
-    );
-}
-
-
-/* =========================================================
-   SMOKE
-   ========================================================= */
-
-function createLaunchSmoke() {
-
-    if (!rocket) {
-        return;
-    }
-
-    for (
-        let i = 0;
-        i < 4;
-        i++
-    ) {
-
-        const smoke =
-            new THREE.Mesh(
-                new THREE.SphereGeometry(
-                    0.6 +
-                    Math.random() * 0.7,
+                post.position.set(
+                    towerX + xOffset,
                     12,
-                    12
-                ),
-                new THREE.MeshBasicMaterial({
-                    color: 0xc9ced2,
-                    transparent: true,
-                    opacity: 0.18
+                    towerZ + zOffset
+                );
+                post.castShadow = true;
+                launchTower.add(post);
+            }
+        }
+
+        // Cross-braces.
+        for (let y = 3; y <= 21; y += 3) {
+            const beam = new THREE.Mesh(
+                new THREE.BoxGeometry(3.1, 0.25, 0.25),
+                darkSteel
+            );
+            beam.position.set(towerX, y, towerZ - 1.4);
+            launchTower.add(beam);
+
+            const cross = new THREE.Mesh(
+                new THREE.BoxGeometry(0.25, 0.25, 3.1),
+                darkSteel
+            );
+            cross.position.set(towerX, y, towerZ);
+            launchTower.add(cross);
+        }
+
+        // Access platforms.
+        for (const y of [7, 13, 19]) {
+            const platform = new THREE.Mesh(
+                new THREE.BoxGeometry(6, 0.3, 4.2),
+                darkSteel
+            );
+            platform.position.set(towerX + 2.5, y, 0);
+            launchTower.add(platform);
+        }
+
+        // Crew access arm.
+        const arm = new THREE.Mesh(
+            new THREE.BoxGeometry(8, 0.6, 0.7),
+            steel
+        );
+        arm.position.set(-4.6, 15, 0);
+        launchTower.add(arm);
+
+        launchGroup.add(launchTower);
+    }
+
+    function createLaunchLighting() {
+        for (const x of [-14, 14]) {
+            const pole = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.12, 0.18, 12, 8),
+                new THREE.MeshStandardMaterial({
+                    color: 0x596579,
+                    metalness: 0.5
                 })
             );
+            pole.position.set(x, 6, -7);
+            launchGroup.add(pole);
 
-        smoke.position.copy(
-            rocket.position
-        );
+            const light = new THREE.PointLight(0x9fcfff, 2, 35);
+            light.position.set(x, 12, -7);
+            launchGroup.add(light);
 
-        smoke.position.y -=
-            9;
+            const lamp = new THREE.Mesh(
+                new THREE.BoxGeometry(0.8, 0.4, 0.8),
+                new THREE.MeshBasicMaterial({ color: 0xd9edff })
+            );
+            lamp.position.copy(light.position);
+            launchGroup.add(lamp);
+        }
 
-        smoke.position.x +=
-            (Math.random() - 0.5) * 4;
-
-        smoke.position.z +=
-            (Math.random() - 0.5) * 4;
-
-        smoke.userData.life =
-            2 +
-            Math.random() * 2;
-
-        scene.add(
-            smoke
-        );
-
-        smokeParticles.push(
-            smoke
-        );
+        launchGroup.add(new THREE.AmbientLight(0xffffff, 0.45));
     }
-}
 
+    function createLaunchHorizon() {
+        // Distant curved horizon is implied by the Earth globe.
+        // Low buildings make the launch complex look grounded.
+        const buildingMaterial = new THREE.MeshStandardMaterial({
+            color: 0x526273,
+            roughness: 0.9
+        });
 
-/* =========================================================
-   UPDATE SMOKE
-   ========================================================= */
+        for (let i = 0; i < 8; i++) {
+            const width = 3 + Math.random() * 4;
+            const height = 2 + Math.random() * 5;
+            const depth = 3 + Math.random() * 4;
 
-function updateSmoke(
-    delta
-) {
-
-    for (
-        let i =
-            smokeParticles.length - 1;
-        i >= 0;
-        i--
-    ) {
-
-        const smoke =
-            smokeParticles[i];
-
-        smoke.userData.life -=
-            delta;
-
-        smoke.position.y +=
-            delta * 1.3;
-
-        smoke.position.x +=
-            Math.sin(
-                smoke.userData.life * 2
-            ) *
-            delta *
-            0.4;
-
-        smoke.scale.multiplyScalar(
-            1 + delta * 0.8
-        );
-
-        smoke.material.opacity =
-            Math.max(
-                0,
-                smoke.userData.life * 0.055
+            const building = new THREE.Mesh(
+                new THREE.BoxGeometry(width, height, depth),
+                buildingMaterial
             );
 
-        if (
-            smoke.userData.life <= 0
-        ) {
+            const angle = (i / 8) * Math.PI * 2;
+            const radius = 34 + Math.random() * 5;
 
-            scene.remove(
-                smoke
+            building.position.set(
+                Math.cos(angle) * radius,
+                height / 2 - 0.2,
+                Math.sin(angle) * radius
             );
 
-            smokeParticles.splice(
-                i,
-                1
-            );
+            launchGroup.add(building);
         }
     }
-}
 
+    // ----------------------------------------------------------
+    // 7. ROCKET BUILDER
+    // ----------------------------------------------------------
 
-/* =========================================================
-   STAGE SEPARATION
-   ========================================================= */
+    function initBuilder() {
+        document.querySelectorAll("[data-part]").forEach(button => {
+            button.addEventListener("click", () => {
+                const type = button.dataset.part;
+                if (!PARTS[type]) return;
 
-function separateStage() {
+                state.rocketParts.push(type);
+                updateBuilder();
+                showNotification(PARTS[type].name + " added.");
+            });
+        });
 
-    if (!state.flightActive) {
+        if ($("clear-rocket")) {
+            $("clear-rocket").addEventListener("click", () => {
+                state.rocketParts = [];
+                updateBuilder();
+                showNotification("Rocket design cleared.");
+            });
+        }
 
-        showNotification(
-            "STAGING",
-            "No active flight."
-        );
+        if ($("save-rocket")) {
+            $("save-rocket").addEventListener("click", saveRocket);
+        }
 
-        return;
+        if ($("launch-rocket")) {
+            $("launch-rocket").addEventListener("click", prepareLaunch);
+        }
     }
 
-    if (!rocket) {
-        return;
-    }
+    function updateBuilder() {
+        const container = $("builder-rocket");
 
-    if (
-        state.stage >= 3
-    ) {
+        if (container) {
+            container.replaceChildren();
 
-        showNotification(
-            "STAGING",
-            "No additional stages available."
-        );
+            if (!state.rocketParts.length) {
+                const empty = document.createElement("p");
+                empty.className = "empty-builder";
+                empty.textContent = "Select components to build your rocket.";
+                container.appendChild(empty);
+            } else {
+                state.rocketParts.forEach((type, index) => {
+                    const part = PARTS[type];
+                    const item = document.createElement("button");
 
-        return;
-    }
+                    item.type = "button";
+                    item.className = "rocket-part-item";
+                    item.title = "Click to remove " + part.name;
+                    item.textContent = `${index + 1}. ${part.name}`;
 
-    /*
-       Stage 1:
-       separate side boosters.
-    */
+                    item.addEventListener("click", () => {
+                        state.rocketParts.splice(index, 1);
+                        updateBuilder();
+                    });
 
-    if (state.stage === 1) {
-
-        stageGroups.forEach(
-            group => {
-
-                group.userData.separated =
-                    true;
-
-                group.userData.velocity =
-                    (group.position.x < 0
-                        ? -1
-                        : 1) * 3;
+                    container.appendChild(item);
+                });
             }
-        );
+        }
 
-        state.stage = 2;
+        const counts = {
+            fuel: 0,
+            thrust: 0,
+            dryMass: 8000,
+            engines: 0,
+            stages: 1
+        };
 
-        showNotification(
-            "STAGING",
-            "Stage 1 separated. Stage 2 active."
-        );
+        state.rocketParts.forEach(type => {
+            const part = PARTS[type];
+            if (!part) return;
 
-    } else {
+            counts.dryMass += part.mass;
+            counts.fuel += part.fuel;
+            counts.thrust += part.thrust;
 
-        state.stage = 3;
+            if (part.thrust > 0) counts.engines++;
+            if (type === "decoupler") counts.stages++;
+        });
 
-        showNotification(
-            "STAGING",
-            "Stage 2 separated. Upper stage active."
-        );
+        state.dryMass = counts.dryMass;
+        state.maxFuel = counts.fuel;
+        state.thrust = counts.thrust;
+        state.isp = getEngineIsp();
+        state.mass = state.dryMass + state.maxFuel;
+
+        setText("vehicle-parts", state.rocketParts.length);
+        setText("vehicle-stages", counts.stages);
+        setText("vehicle-mass", `${Math.round(state.mass).toLocaleString()} kg`);
+        setText("vehicle-fuel", `${Math.round(state.maxFuel).toLocaleString()} kg`);
+        setText("vehicle-thrust", `${Math.round(state.thrust).toLocaleString()} kN`);
+
+        // Ideal rocket equation. This estimate ignores gravity and drag losses.
+        const dv = state.maxFuel > 0 && state.thrust > 0
+            ? state.isp * CONFIG.G0 *
+              Math.log((state.dryMass + state.maxFuel) / state.dryMass)
+            : 0;
+
+        setText("vehicle-dv", `${Math.round(dv).toLocaleString()} m/s`);
     }
 
-    setText(
-        "flight-stage",
-        state.stage
-    );
-}
+    function getEngineIsp() {
+        const engines = state.rocketParts
+            .map(type => PARTS[type])
+            .filter(part => part && part.thrust > 0);
 
+        if (!engines.length) return 300;
 
-/* =========================================================
-   UPDATE SEPARATED BOOSTERS
-   ========================================================= */
+        return engines.reduce((sum, engine) => sum + (engine.isp || 300), 0)
+            / engines.length;
+    }
 
-function updateSeparatedStages(
-    delta
-) {
+    function saveRocket() {
+        try {
+            localStorage.setItem(
+                "astroviaRocketParts",
+                JSON.stringify(state.rocketParts)
+            );
+            showNotification("Rocket design saved on this device.");
+        } catch (error) {
+            console.warn("Could not save rocket:", error);
+            showNotification("Saving is unavailable in this browser.");
+        }
+    }
 
-    stageGroups.forEach(
-        group => {
+    function loadSavedRocket() {
+        try {
+            const saved = localStorage.getItem("astroviaRocketParts");
+            if (!saved) return;
 
-            if (
-                !group.userData.separated
-            ) {
-                return;
+            const parts = JSON.parse(saved);
+            if (!Array.isArray(parts)) return;
+
+            state.rocketParts = parts.filter(type => Boolean(PARTS[type]));
+        } catch (error) {
+            console.warn("Saved rocket could not be loaded:", error);
+        }
+    }
+
+    // ----------------------------------------------------------
+    // 8. ROCKET 3D MODEL
+    // ----------------------------------------------------------
+
+    function createFlightRocket() {
+        if (rocket) {
+            launchGroup.remove(rocket);
+            disposeObject(rocket);
+            rocket = null;
+        }
+
+        boosterGroups.length = 0;
+        rocket = new THREE.Group();
+        rocket.name = "AstroviaSpacecraft";
+
+        const white = new THREE.MeshStandardMaterial({
+            color: 0xe9eef5,
+            metalness: 0.25,
+            roughness: 0.45
+        });
+
+        const dark = new THREE.MeshStandardMaterial({
+            color: 0x343f50,
+            metalness: 0.65,
+            roughness: 0.4
+        });
+
+        const metallic = new THREE.MeshStandardMaterial({
+            color: 0x9caec1,
+            metalness: 0.8,
+            roughness: 0.3
+        });
+
+        const orange = new THREE.MeshStandardMaterial({
+            color: 0xe88a38,
+            metalness: 0.2,
+            roughness: 0.55
+        });
+
+        // Main tank and lower stage.
+        const tank = new THREE.Mesh(
+            new THREE.CylinderGeometry(1.15, 1.15, 8.5, 24),
+            white
+        );
+        tank.position.y = 6.2;
+        tank.castShadow = true;
+        rocket.add(tank);
+
+        const orangeBand = new THREE.Mesh(
+            new THREE.CylinderGeometry(1.18, 1.18, 0.8, 24),
+            orange
+        );
+        orangeBand.position.y = 5.3;
+        rocket.add(orangeBand);
+
+        const interstage = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.95, 1.2, 1.3, 24),
+            dark
+        );
+        interstage.position.y = 1.6;
+        rocket.add(interstage);
+
+        // Upper stage.
+        const upperTank = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.78, 0.78, 4, 24),
+            metallic
+        );
+        upperTank.position.y = 12.4;
+        rocket.add(upperTank);
+
+        const upperBand = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.81, 0.81, 0.25, 24),
+            dark
+        );
+        upperBand.position.y = 10.5;
+        rocket.add(upperBand);
+
+        // Crew capsule.
+        const capsule = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.75, 0.95, 1.7, 24),
+            white
+        );
+        capsule.position.y = 15.1;
+        rocket.add(capsule);
+
+        const nose = new THREE.Mesh(
+            new THREE.ConeGeometry(0.75, 1.8, 24),
+            metallic
+        );
+        nose.position.y = 16.85;
+        rocket.add(nose);
+
+        const window = new THREE.Mesh(
+            new THREE.SphereGeometry(0.28, 16, 12),
+            new THREE.MeshStandardMaterial({
+                color: 0x4dc6ff,
+                emissive: 0x12334d,
+                metalness: 0.8,
+                roughness: 0.15
+            })
+        );
+        window.scale.set(1, 0.8, 0.3);
+        window.position.set(0, 15.15, 0.72);
+        rocket.add(window);
+
+        // Engine mount and nozzle.
+        const mount = new THREE.Mesh(
+            new THREE.CylinderGeometry(1.1, 0.85, 1.1, 24),
+            dark
+        );
+        mount.position.y = 0.5;
+        rocket.add(mount);
+
+        const nozzle = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.48, 0.78, 1.8, 24, 1, true),
+            metallic
+        );
+        nozzle.position.y = -0.8;
+        rocket.add(nozzle);
+
+        // Engine flame.
+        mainFlame = new THREE.Mesh(
+            new THREE.ConeGeometry(0.58, 4.5, 24),
+            new THREE.MeshBasicMaterial({
+                color: 0x45baff,
+                transparent: true,
+                opacity: 0.88,
+                depthWrite: false
+            })
+        );
+        mainFlame.position.y = -3.6;
+        mainFlame.visible = false;
+        rocket.add(mainFlame);
+
+        mainFlameLight = new THREE.PointLight(0x56aaff, 0, 25);
+        mainFlameLight.position.y = -2;
+        rocket.add(mainFlameLight);
+
+        // Four aerodynamic fins.
+        for (let i = 0; i < 4; i++) {
+            const fin = new THREE.Mesh(
+                new THREE.BoxGeometry(0.18, 2.0, 1.3),
+                dark
+            );
+            const angle = i * Math.PI / 2;
+
+            fin.position.set(
+                Math.sin(angle) * 1.15,
+                1.4,
+                Math.cos(angle) * 1.15
+            );
+            fin.rotation.y = angle;
+            rocket.add(fin);
+        }
+
+        // Side boosters: visually and physically separated at staging.
+        const boosterCount = Math.max(
+            2,
+            Math.min(4, state.rocketParts.filter(p => p === "booster").length * 2)
+        );
+
+        for (let i = 0; i < boosterCount; i++) {
+            const angle = i / boosterCount * Math.PI * 2;
+            const booster = createBooster(angle);
+            boosterGroups.push(booster);
+            rocket.add(booster);
+        }
+
+        // Antenna and small details.
+        const antenna = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.035, 0.035, 1.4, 8),
+            metallic
+        );
+        antenna.position.set(0.45, 16.2, 0);
+        rocket.add(antenna);
+
+        rocket.position.set(0, 2.1, 0);
+        rocket.rotation.set(0, 0, 0);
+
+        launchGroup.add(rocket);
+        rocketCore = tank;
+
+        return rocket;
+    }
+
+    function createBooster(angle) {
+        const booster = new THREE.Group();
+
+        const x = Math.cos(angle) * 2.0;
+        const z = Math.sin(angle) * 2.0;
+
+        const body = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.42, 0.48, 7.5, 16),
+            new THREE.MeshStandardMaterial({
+                color: 0xe6e9ef,
+                metalness: 0.2,
+                roughness: 0.5
+            })
+        );
+        body.position.y = 5.2;
+        booster.add(body);
+
+        const nose = new THREE.Mesh(
+            new THREE.ConeGeometry(0.42, 1.1, 16),
+            new THREE.MeshStandardMaterial({ color: 0xe88a38 })
+        );
+        nose.position.y = 9.5;
+        booster.add(nose);
+
+        const nozzle = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.2, 0.35, 1, 16, 1, true),
+            new THREE.MeshStandardMaterial({
+                color: 0x8293a6,
+                metalness: 0.85
+            })
+        );
+        nozzle.position.y = 1.0;
+        booster.add(nozzle);
+
+        const flame = new THREE.Mesh(
+            new THREE.ConeGeometry(0.3, 2.8, 16),
+            new THREE.MeshBasicMaterial({
+                color: 0xff9a3c,
+                transparent: true,
+                opacity: 0.85,
+                depthWrite: false
+            })
+        );
+        flame.position.y = -1.1;
+        flame.visible = false;
+        booster.add(flame);
+
+        booster.position.set(x, 0, z);
+        booster.userData = {
+            separated: false,
+            velocity: new THREE.Vector3(),
+            flame
+        };
+
+        return booster;
+    }
+
+    function disposeObject(object) {
+        object.traverse(child => {
+            if (child.geometry) child.geometry.dispose();
+
+            if (child.material) {
+                const materials = Array.isArray(child.material)
+                    ? child.material
+                    : [child.material];
+
+                materials.forEach(material => material.dispose());
             }
+        });
+    }
 
-            const velocity =
-                group.userData.velocity || 0;
+    // ----------------------------------------------------------
+    // 9. INTERFACE AND NAVIGATION
+    // ----------------------------------------------------------
 
-            group.position.x +=
-                velocity *
-                delta;
+    function initInterface() {
+        initBuilder();
 
-            group.position.y -=
-                1.5 *
-                delta;
+        document.querySelectorAll("[data-section]").forEach(button => {
+            button.addEventListener("click", () => {
+                activateSection(button.dataset.section);
+            });
+        });
 
-            group.rotation.z +=
-                delta;
+        document.querySelectorAll("[data-close-panel]").forEach(button => {
+            button.addEventListener("click", () => {
+                const panel = button.closest(".interface-panel");
+                if (panel) panel.classList.remove("visible");
+            });
+        });
+
+        document.querySelectorAll("[data-speed]").forEach(button => {
+            button.addEventListener("click", () => {
+                state.speed = Number(button.dataset.speed);
+                state.paused = state.speed === 0;
+                updatePauseButton();
+                showNotification(
+                    state.paused ? "Simulation paused." :
+                    `Simulation speed: ${state.speed}×`
+                );
+            });
+        });
+
+        if ($("pause-button")) {
+            $("pause-button").addEventListener("click", togglePause);
         }
-    );
-}
 
-
-/* =========================================================
-   RCS
-   ========================================================= */
-
-function toggleRCS() {
-
-    state.rcs =
-        !state.rcs;
-
-    showNotification(
-        "RCS",
-        state.rcs
-            ? "Reaction control system enabled."
-            : "Reaction control system disabled."
-    );
-}
-
-
-/* =========================================================
-   LANDING GEAR
-   ========================================================= */
-
-function toggleLandingGear() {
-
-    state.landingGear =
-        !state.landingGear;
-
-    showNotification(
-        "LANDING SYSTEM",
-        state.landingGear
-            ? "Landing gear deployed."
-            : "Landing gear retracted."
-    );
-}
-
-
-/* =========================================================
-   FLIGHT PHYSICS
-   ========================================================= */
-
-function updateFlight(
-    delta
-) {
-
-    if (
-        !state.flightActive ||
-        !rocket
-    ) {
-
-        updateSmoke(
-            delta
-        );
-
-        return;
-    }
-
-    if (state.paused) {
-
-        updateSmoke(
-            delta
-        );
-
-        return;
-    }
-
-    const dt =
-        Math.min(
-            delta,
-            0.05
-        );
-
-    state.missionTime +=
-        dt;
-
-    /*
-       ROCKET IS ON PAD
-    */
-
-    if (
-        !state.ignition
-    ) {
-
-        rocket.position.y =
-            7.8;
-
-        state.verticalVelocity =
-            0;
-
-        state.velocity =
-            0;
-
-        state.rocketThrust =
-            0;
-
-        updateTelemetry();
-
-        updateCameraPosition();
-
-        updateSmoke(
-            delta
-        );
-
-        return;
-    }
-
-    /*
-       THROTTLE
-    */
-
-    const throttle =
-        state.throttle / 100;
-
-    /*
-       SIMPLIFIED EARTH GRAVITY
-
-       altitude is represented in km.
-    */
-
-    const gravity =
-        9.81 *
-        Math.pow(
-            6371 /
-            (6371 + state.altitude),
-            2
-        );
-
-    /*
-       THRUST
-
-       Strong enough for visible liftoff.
-    */
-
-    const thrustAcceleration =
-        32 *
-        throttle;
-
-    const acceleration =
-        thrustAcceleration -
-        gravity;
-
-    state.verticalVelocity +=
-        acceleration *
-        dt;
-
-    /*
-       Prevent the rocket from
-       falling through the pad.
-    */
-
-    if (
-        state.verticalVelocity < 0 &&
-        state.altitude <= 0
-    ) {
-
-        state.verticalVelocity =
-            0;
-    }
-
-    /*
-       ALTITUDE
-    */
-
-    state.altitude +=
-        state.verticalVelocity *
-        dt /
-        1000;
-
-    if (
-        state.altitude < 0
-    ) {
-
-        state.altitude = 0;
-    }
-
-    /*
-       VELOCITY
-    */
-
-    state.velocity =
-        Math.max(
-            0,
-            state.verticalVelocity
-        );
-
-    /*
-       FUEL
-    */
-
-    state.fuel -=
-        throttle *
-        1.2 *
-        dt;
-
-    state.fuel =
-        Math.max(
-            0,
-            state.fuel
-        );
-
-    /*
-       THRUST
-    */
-
-    state.rocketThrust =
-        throttle *
-        850;
-
-    /*
-       ROCKET MOVEMENT
-
-       0.035 gives a visible but
-       controllable movement in the
-       3D world.
-    */
-
-    rocket.position.y +=
-        state.verticalVelocity *
-        dt *
-        0.035;
-
-    /*
-       NATURAL VIBRATION
-    */
-
-    rocket.position.x =
-        Math.sin(
-            state.missionTime * 40
-        ) *
-        0.025;
-
-    rocket.rotation.z =
-        Math.sin(
-            state.missionTime * 1.2
-        ) *
-        0.01;
-
-    /*
-       FLAME ANIMATION
-    */
-
-    engineFlames.forEach(
-        flame => {
-
-            flame.scale.x =
-                0.85 +
-                Math.random() * 0.25;
-
-            flame.scale.z =
-                0.85 +
-                Math.random() * 0.25;
-
-            flame.scale.y =
-                0.85 +
-                throttle * 0.5;
+        if ($("settings-button")) {
+            $("settings-button").addEventListener("click", () => {
+                showNotification("Drag to rotate. Scroll to zoom. Use the flight controls during a mission.");
+            });
         }
-    );
 
-    /*
-       SMOKE
-    */
+        if ($("throttle")) {
+            $("throttle").addEventListener("input", event => {
+                state.throttle = clamp(Number(event.target.value), 0, 100);
+                updateTelemetry();
+            });
+        }
 
-    if (
-        Math.random() < 0.35
-    ) {
+        if ($("ignition-button")) {
+            $("ignition-button").addEventListener("click", toggleIgnition);
+        }
 
-        createLaunchSmoke();
+        if ($("stage-button")) {
+            $("stage-button").addEventListener("click", stageRocket);
+        }
+
+        if ($("rcs-button")) {
+            $("rcs-button").addEventListener("click", () => {
+                state.rcs = !state.rcs;
+                showNotification(state.rcs ? "RCS enabled." : "RCS disabled.");
+            });
+        }
+
+        if ($("landing-gear-button")) {
+            $("landing-gear-button").addEventListener("click", () => {
+                state.landingGear = !state.landingGear;
+                showNotification(
+                    state.landingGear ? "Landing gear deployed." : "Landing gear retracted."
+                );
+            });
+        }
+
+        document.querySelectorAll("[data-control]").forEach(button => {
+            button.addEventListener("click", () => {
+                applyAttitudeControl(button.dataset.control);
+            });
+        });
+
+        document.querySelectorAll("[data-mission]").forEach(button => {
+            button.addEventListener("click", () => {
+                startMission(button.dataset.mission);
+            });
+        });
+
+        if ($("station-docking-button")) {
+            $("station-docking-button").addEventListener("click", () => {
+                showNotification("Docking practice is a visual demonstration, not a validated rendezvous calculation.");
+            });
+        }
+
+        window.addEventListener("keydown", onKeyDown);
     }
 
-    /*
-       FUEL EMPTY
-    */
+    function activateSection(section) {
+        const valid = [
+            "solar-system", "planet-explorer", "rocket-builder",
+            "missions", "station", "flight", "theories"
+        ];
 
-    if (
-        state.fuel <= 0
-    ) {
+        if (!valid.includes(section)) return;
+
+        state.activeSection = section;
+
+        document.querySelectorAll("[data-section]").forEach(button => {
+            button.classList.toggle(
+                "active",
+                button.dataset.section === section
+            );
+        });
+
+        const panelMap = {
+            "solar-system": "solar-system-panel",
+            "planet-explorer": "planet-panel",
+            "rocket-builder": "rocket-builder-panel",
+            "missions": "missions-panel",
+            "station": "station-panel",
+            "flight": "flight-hud",
+            "theories": "theories-panel"
+        };
+
+        Object.values(panelMap).forEach(id => {
+            const panel = $(id);
+            if (panel) panel.classList.remove("visible");
+        });
+
+        const panel = $(panelMap[section]);
+        if (panel) panel.classList.add("visible");
+
+        const isFlight = section === "flight";
+        launchGroup.visible = isFlight && state.flightActive;
+        solarSystemGroup.visible = !isFlight || state.phase === "transfer" ||
+            state.phase === "arrived";
+
+        setText(
+            "current-mode",
+            section.replaceAll("-", " ").toUpperCase()
+        );
+
+        if (isFlight) {
+            if (!rocket && state.flightActive) createFlightRocket();
+            if (rocket && state.phase === "launch") {
+                cameraTarget = rocket.position;
+            } else if (rocket && state.phase === "transfer") {
+                cameraTarget = rocket.position;
+            }
+        } else if (section === "planet-explorer") {
+            selectPlanet(state.selectedPlanet);
+        }
+
+        updateCamera();
+    }
+
+    function selectPlanet(name) {
+        if (name === "Sun") {
+            showNotification("The Sun is a star, not a planet.");
+            return;
+        }
+
+        if (name === "Moon") {
+            showNotification("Moon selected. Use the lunar mission to plan a journey there.");
+        } else if (!PLANETS[name]) {
+            return;
+        }
+
+        state.selectedPlanet = name;
+
+        const data = name === "Moon" ? {
+            type: "Natural satellite",
+            diameter: "3,475 km",
+            mass: "7.35 × 10²² kg",
+            gravity: "1.62 m/s²",
+            distance: "384,400 km from Earth",
+            rotation: "27.3 Earth days",
+            orbit: "27.3 Earth days",
+            temperature: "-20°C average (varies greatly)",
+            moons: "Not applicable",
+            description: "Earth's natural satellite."
+        } : PLANETS[name];
+
+        setText("planet-name", name);
+        setText("planet-type", data.type);
+        setText("planet-description", data.description);
+        setText("planet-diameter", data.diameter);
+        setText("planet-mass", data.mass);
+        setText("planet-gravity", data.gravity);
+        setText("planet-distance", data.distance);
+        setText("planet-rotation", data.rotation);
+        setText("planet-orbit", data.orbit);
+        setText("planet-temperature", data.temperature);
+        setText("planet-moons", data.moons);
+
+        const body = celestialBodies.get(name);
+        if (body) {
+            cameraTarget = body.getWorldPosition(new THREE.Vector3());
+            const radius = body.userData.visualRadius || 3;
+            cameraDistance = Math.max(12, radius * 5);
+            updateCamera();
+        }
+    }
+
+    // ----------------------------------------------------------
+    // 10. MISSION SETUP
+    // ----------------------------------------------------------
+
+    function startMission(mission) {
+        const missionTargets = {
+            orbit: "Earth",
+            moon: "Moon",
+            mars: "Mars",
+            station: "Earth",
+            satellite: "Earth",
+            "deep-space": "Neptune"
+        };
+
+        if (!(mission in missionTargets)) return;
+
+        state.mission = mission;
+        state.destination = missionTargets[mission];
+
+        setText(
+            "flight-mission-name",
+            mission.replaceAll("-", " ").replace(/\b\w/g, c => c.toUpperCase())
+        );
+
+        if (mission === "orbit" || mission === "station" || mission === "satellite") {
+            showNotification("Earth mission selected. Prepare a rocket with fuel and an engine.");
+        } else {
+            showNotification(`Destination selected: ${state.destination}.`);
+        }
+
+        if (!state.rocketParts.length) {
+            activateSection("rocket-builder");
+            showNotification("Add a fuel tank and an engine before launching.");
+            return;
+        }
+
+        activateSection("flight");
+        prepareLaunch();
+    }
+
+    function prepareLaunch() {
+        const hasFuel = state.rocketParts.some(type =>
+            PARTS[type] && PARTS[type].fuel > 0
+        );
+
+        const hasEngine = state.rocketParts.some(type =>
+            PARTS[type] && PARTS[type].thrust > 0
+        );
+
+        if (!state.rocketParts.length || !hasFuel || !hasEngine) {
+            showNotification("Your rocket needs at least one fuel tank and one engine.");
+            activateSection("rocket-builder");
+            return;
+        }
+
+        resetFlight();
+        createFlightRocket();
+
+        state.flightActive = true;
+        state.phase = "launch";
+        state.destination = state.destination || "Earth";
+
+        launchGroup.visible = true;
+        solarSystemGroup.visible = false;
+
+        activateSection("flight");
+        launchGroup.visible = true;
+        solarSystemGroup.visible = false;
+
+        cameraTarget = rocket.position;
+        cameraDistance = 75;
+        updateCamera();
+
+        beginCountdown();
+    }
+
+    function resetFlight() {
+        stopCountdown();
+        clearSmoke();
 
         state.ignition = false;
+        state.countdownRunning = false;
+        state.countdown = 0;
+        state.stage = 1;
+        state.throttle = 0;
+        state.altitude = 0;
+        state.verticalVelocity = 0;
+        state.horizontalVelocity = 0;
+        state.missionTime = 0;
+        state.fuel = state.maxFuel;
+        state.mass = state.dryMass + state.fuel;
+        state.pitch = 0;
+        state.heading = 0;
+        state.phase = "launch";
+        state.arrivalNotified = false;
+        state.heliocentricPosition = null;
+        state.heliocentricVelocity = null;
 
-        stopEngineFlames();
+        if ($("throttle")) $("throttle").value = "0";
 
-        showNotification(
-            "FUEL",
-            "Fuel supply depleted."
-        );
+        if (mainFlame) mainFlame.visible = false;
+        if (mainFlameLight) mainFlameLight.intensity = 0;
     }
 
-    updateSeparatedStages(
-        dt
-    );
+    function beginCountdown() {
+        stopCountdown();
 
-    updateTelemetry();
+        const overlay = $("countdown-overlay");
+        if (overlay) overlay.hidden = false;
 
-    updateCameraPosition();
+        state.countdownRunning = true;
+        state.countdown = 5;
+        setText("countdown-number", state.countdown);
 
-    updateSmoke(
-        delta
-    );
-}
+        countdownInterval = window.setInterval(() => {
+            if (state.paused) return;
 
+            state.countdown--;
 
-/* =========================================================
-   FLIGHT CAMERA
-   ========================================================= */
-
-function updateFlightCamera() {
-
-    if (!rocket) {
-        return;
+            if (state.countdown <= 0) {
+                stopCountdown();
+                if (overlay) overlay.hidden = true;
+                igniteRocket();
+                showEvent("LIFTOFF — ENGINES IGNITED");
+            } else {
+                setText("countdown-number", state.countdown);
+            }
+        }, 1000);
     }
 
-    /*
-       Camera follows rocket while
-       still allowing mouse movement.
-    */
-
-    updateCameraPosition();
-}
-
-
-/* =========================================================
-   SOLAR SYSTEM MOTION
-   ========================================================= */
-
-function updateSolarSystem(
-    delta
-) {
-
-    if (
-        state.paused ||
-        state.activeSection === "flight"
-    ) {
-        return;
-    }
-
-    const speed =
-        state.simulationSpeed;
-
-    if (sun) {
-
-        sun.rotation.y +=
-            delta *
-            0.12 *
-            speed;
-    }
-
-    orbitObjects.forEach(
-        planet => {
-
-            const data =
-                planet.userData;
-
-            data.angle +=
-                data.orbitSpeed *
-                delta *
-                speed;
-
-            planet.position.x =
-                Math.cos(
-                    data.angle
-                ) *
-                data.distance;
-
-            planet.position.z =
-                Math.sin(
-                    data.angle
-                ) *
-                data.distance;
-
-            planet.rotation.y +=
-                delta *
-                0.18 *
-                speed;
+    function stopCountdown() {
+        if (countdownInterval !== null) {
+            clearInterval(countdownInterval);
+            countdownInterval = null;
         }
-    );
 
-    /*
-       Moon movement
-    */
+        state.countdownRunning = false;
 
-    const earth =
-        celestialBodies.Earth;
-
-    const moon =
-        celestialBodies.Moon;
-
-    if (
-        earth &&
-        moon
-    ) {
-
-        const angle =
-            performance.now() *
-            0.00045 *
-            speed;
-
-        moon.position.x =
-            earth.position.x +
-            Math.cos(angle) *
-            7;
-
-        moon.position.z =
-            earth.position.z +
-            Math.sin(angle) *
-            7;
+        const overlay = $("countdown-overlay");
+        if (overlay) overlay.hidden = true;
     }
 
-    /*
-       Earth clouds
-    */
-
-    if (earthClouds) {
-
-        earthClouds.rotation.y +=
-            delta *
-            0.035 *
-            speed;
-    }
-}
-
-
-/* =========================================================
-   TELEMETRY
-   ========================================================= */
-
-function updateTelemetry() {
-
-    setText(
-        "telemetry-altitude",
-        state.altitude.toFixed(2) +
-        " km"
-    );
-
-    setText(
-        "telemetry-velocity",
-        state.velocity.toFixed(0) +
-        " m/s"
-    );
-
-    setText(
-        "telemetry-vertical",
-        state.verticalVelocity.toFixed(0) +
-        " m/s"
-    );
-
-    setText(
-        "telemetry-throttle",
-        Math.round(
-            state.throttle
-        ) +
-        "%"
-    );
-
-    setText(
-        "telemetry-fuel",
-        state.fuel.toFixed(1) +
-        "%"
-    );
-
-    setText(
-        "telemetry-thrust",
-        state.rocketThrust.toFixed(0) +
-        " kN"
-    );
-
-    state.apoapsis =
-        Math.max(
-            state.altitude,
-            0
-        );
-
-    state.periapsis =
-        Math.max(
-            state.altitude - 5,
-            0
-        );
-
-    setText(
-        "telemetry-apoapsis",
-        state.apoapsis.toFixed(1) +
-        " km"
-    );
-
-    setText(
-        "telemetry-periapsis",
-        state.periapsis.toFixed(1) +
-        " km"
-    );
-
-    updateMissionClock();
-}
-
-
-/* =========================================================
-   MISSION CLOCK
-   ========================================================= */
-
-function updateMissionClock() {
-
-    const total =
-        Math.floor(
-            state.missionTime
-        );
-
-    const minutes =
-        Math.floor(
-            total / 60
-        );
-
-    const seconds =
-        total % 60;
-
-    setText(
-        "simulation-time",
-        "T+ " +
-        String(minutes).padStart(2, "0") +
-        ":" +
-        String(seconds).padStart(2, "0")
-    );
-}
-
-
-/* =========================================================
-   THROTTLE DISPLAY
-   ========================================================= */
-
-function updateThrottleDisplay() {
-
-    setText(
-        "throttle-value",
-        Math.round(
-            state.throttle
-        ) +
-        "%"
-    );
-
-    setText(
-        "telemetry-throttle",
-        Math.round(
-            state.throttle
-        ) +
-        "%"
-    );
-}
-
-
-/* =========================================================
-   MISSIONS
-   ========================================================= */
-
-function startMission(
-    mission
-) {
-
-    state.mission =
-        mission;
-
-    const names = {
-
-        orbit:
-            "EARTH ORBIT",
-
-        moon:
-            "LUNAR MISSION",
-
-        mars:
-            "MARS MISSION",
-
-        station:
-            "STATION DOCKING",
-
-        satellite:
-            "SATELLITE DEPLOYMENT",
-
-        "deep-space":
-            "DEEP SPACE PROBE"
-    };
-
-    const missionName =
-        names[mission] ||
-        "CUSTOM MISSION";
-
-    setText(
-        "flight-mission",
-        missionName
-    );
-
-    if (
-        state.rocketParts.length === 0
-    ) {
-
-        activateSection(
-            "rocket-builder"
-        );
-
-        showNotification(
-            "MISSION CONTROL",
-            missionName +
-            " selected. Build a rocket first."
-        );
-
-        return;
-    }
-
-    prepareLaunch();
-}
-
-
-/* =========================================================
-   PAUSE
-   ========================================================= */
-
-function togglePause() {
-
-    state.paused =
-        !state.paused;
-
-    state.simulationSpeed =
-        state.paused
-            ? 0
-            : 1;
-
-    updatePauseButton();
-
-    showNotification(
-        "SIMULATION",
-        state.paused
-            ? "Simulation paused."
-            : "Simulation resumed."
-    );
-}
-
-
-function updatePauseButton() {
-
-    const button =
-        document.getElementById(
-            "pause-button"
-        );
-
-    if (button) {
-
-        button.textContent =
-            state.paused
-                ? "RESUME"
-                : "PAUSE";
-    }
-}
-
-
-/* =========================================================
-   KEYBOARD CONTROLS
-   ========================================================= */
-
-function handleKeyboard(
-    event
-) {
-
-    if (
-        event.target &&
-        (
-            event.target.tagName === "INPUT" ||
-            event.target.tagName === "TEXTAREA"
-        )
-    ) {
-        return;
-    }
-
-    /*
-       SPACE = IGNITION
-    */
-
-    if (
-        event.code === "Space"
-    ) {
-
-        event.preventDefault();
-
-        if (
-            state.activeSection === "flight"
-        ) {
-
-            ignitionSequence();
+    function toggleIgnition() {
+        if (!state.flightActive) {
+            showNotification("Select a mission and prepare a launch first.");
+            return;
         }
+
+        if (state.phase === "transfer") {
+            state.ignition = !state.ignition;
+            showNotification(state.ignition ? "Transfer burn enabled." : "Engine cutoff.");
+            return;
+        }
+
+        if (state.phase !== "launch" && state.phase !== "orbit") return;
+
+        if (state.fuel <= 0) {
+            showNotification("No fuel remaining.");
+            return;
+        }
+
+        state.ignition = !state.ignition;
+
+        if (state.ignition && state.throttle <= 0) {
+            state.throttle = 80;
+            if ($("throttle")) $("throttle").value = "80";
+        }
+
+        updateFlames();
+        showNotification(state.ignition ? "Engine ignition." : "Engine cutoff.");
     }
 
-    /*
-       X = STAGE
-    */
+    function igniteRocket() {
+        if (!state.flightActive || state.fuel <= 0) {
+            showNotification("Launch aborted: check fuel and vehicle configuration.");
+            return;
+        }
 
-    if (
-        event.key.toLowerCase() === "x"
-    ) {
+        state.ignition = true;
+        state.throttle = Math.max(state.throttle, 80);
+        if ($("throttle")) $("throttle").value = String(state.throttle);
 
-        separateStage();
+        updateFlames();
+        showNotification("Liftoff! The vehicle is accelerating under thrust.");
     }
 
-    /*
-       R = RCS
-    */
+    function updateFlames() {
+        const active = state.ignition && state.fuel > 0 &&
+            state.throttle > 0;
 
-    if (
-        event.key.toLowerCase() === "r"
-    ) {
+        if (mainFlame) mainFlame.visible = active;
+        if (mainFlameLight) {
+            mainFlameLight.intensity = active ? 2.5 : 0;
+        }
 
-        toggleRCS();
+        boosterGroups.forEach(booster => {
+            if (booster.userData.flame && !booster.userData.separated) {
+                booster.userData.flame.visible = active && state.stage === 1;
+            }
+        });
     }
 
-    /*
-       G = LANDING GEAR
-    */
+    // ----------------------------------------------------------
+    // 11. STAGING
+    // ----------------------------------------------------------
 
-    if (
-        event.key.toLowerCase() === "g"
-    ) {
+    function stageRocket() {
+        if (!state.flightActive || !rocket) {
+            showNotification("No active rocket to stage.");
+            return;
+        }
 
-        toggleLandingGear();
-    }
+        if (state.stage === 1) {
+            state.stage = 2;
 
-    /*
-       P = PAUSE
-    */
+            boosterGroups.forEach((booster, index) => {
+                if (booster.userData.separated) return;
 
-    if (
-        event.key.toLowerCase() === "p"
-    ) {
-
-        togglePause();
-    }
-
-    /*
-       PLANET KEYS
-    */
-
-    if (event.key === "1") {
-        selectPlanet("Mercury");
-    }
-
-    if (event.key === "2") {
-        selectPlanet("Venus");
-    }
-
-    if (event.key === "3") {
-        selectPlanet("Earth");
-    }
-
-    if (event.key === "4") {
-        selectPlanet("Moon");
-    }
-
-    if (event.key === "5") {
-        selectPlanet("Mars");
-    }
-
-    if (event.key === "6") {
-        selectPlanet("Jupiter");
-    }
-
-    if (event.key === "7") {
-        selectPlanet("Saturn");
-    }
-
-    if (event.key === "8") {
-        selectPlanet("Uranus");
-    }
-
-    if (event.key === "9") {
-        selectPlanet("Neptune");
-    }
-}
-
-
-/* =========================================================
-   SET CAMERA
-   ========================================================= */
-
-function setCamera(
-    x,
-    y,
-    z
-) {
-
-    if (!camera) {
-        return;
-    }
-
-    camera.position.set(
-        x,
-        y,
-        z
-    );
-
-    camera.lookAt(
-        0,
-        0,
-        0
-    );
-}
-
-
-/* =========================================================
-   NOTIFICATIONS
-   ========================================================= */
-
-function showNotification(
-    title,
-    message
-) {
-
-    const notification =
-        document.getElementById(
-            "notification"
-        );
-
-    if (!notification) {
-        return;
-    }
-
-    setText(
-        "notification-title",
-        title
-    );
-
-    setText(
-        "notification-text",
-        message
-    );
-
-    notification.classList.add(
-        "visible"
-    );
-
-    clearTimeout(
-        notificationTimer
-    );
-
-    notificationTimer =
-        setTimeout(
-            () => {
-
-                notification.classList.remove(
-                    "visible"
+                booster.userData.separated = true;
+                booster.userData.velocity.set(
+                    (index % 2 === 0 ? 1 : -1) * (2 + index),
+                    -2,
+                    (index % 2 === 0 ? 1 : -1) * 1.5
                 );
 
-            },
+                rocket.remove(booster);
+                launchGroup.add(booster);
+                booster.userData.detachedPosition = booster.position.clone();
+                booster.position.copy(rocket.position).add(
+                    new THREE.Vector3(
+                        Math.cos(index) * 2,
+                        4,
+                        Math.sin(index) * 2
+                    )
+                );
+            });
+
+            showNotification("Stage 1 separated. Upper stage active.");
+            showEvent("BOOSTER SEPARATION");
+        } else if (state.stage === 2) {
+            state.stage = 3;
+            state.ignition = false;
+            updateFlames();
+            showNotification("Upper-stage cutoff. Coast or perform a transfer burn.");
+            showEvent("STAGE 2 CUTOFF");
+        } else {
+            showNotification("All available stages have been used.");
+        }
+
+        setText("flight-stage", state.stage);
+    }
+
+    // ----------------------------------------------------------
+    // 12. FLIGHT PHYSICS
+    // ----------------------------------------------------------
+
+    function updateFlight(dt) {
+        if (!state.flightActive || !rocket) return;
+
+        if (state.phase === "launch" || state.phase === "orbit") {
+            updateLaunchPhysics(dt);
+        } else if (state.phase === "transfer" || state.phase === "arrived") {
+            updateInterplanetaryPhysics(dt);
+        }
+
+        updateDetachedBoosters(dt);
+        updateSmoke(dt);
+        updateTelemetry();
+        updateFlames();
+    }
+
+    function updateLaunchPhysics(dt) {
+        if (!state.ignition || state.fuel <= 0) {
+            // Coast under gravity even when the engine is off.
+            if (state.altitude > 0) {
+                const radius = CONFIG.EARTH_RADIUS_KM + state.altitude;
+                const gravity = CONFIG.EARTH_MU / (radius * radius) * 1000;
+                state.verticalVelocity -= gravity * dt;
+                state.altitude += state.verticalVelocity * dt / 1000;
+
+                if (state.altitude <= 0) {
+                    state.altitude = 0;
+                    state.verticalVelocity = 0;
+                    state.ignition = false;
+                }
+            }
+            updateRocketVisual();
+            return;
+        }
+
+        const totalMass = Math.max(1, state.dryMass + state.fuel);
+        const thrustN = state.thrust * 1000 * state.throttle / 100;
+        const thrustAcceleration = thrustN / totalMass;
+
+        const radius = CONFIG.EARTH_RADIUS_KM + Math.max(0, state.altitude);
+        const gravity = CONFIG.EARTH_MU / (radius * radius) * 1000;
+
+        // A gentle gravity turn gradually tilts thrust away from vertical.
+        if (state.altitude > 10) {
+            state.pitch = Math.min(0.85, state.pitch + dt * 0.0025);
+        }
+
+        const verticalAcceleration =
+            thrustAcceleration * Math.cos(state.pitch) - gravity;
+
+        const horizontalAcceleration =
+            thrustAcceleration * Math.sin(state.pitch);
+
+        state.verticalVelocity += verticalAcceleration * dt;
+        state.horizontalVelocity += horizontalAcceleration * dt;
+
+        // Simple atmospheric drag below 100 km.
+        if (state.altitude < 100) {
+            const densityFactor = Math.exp(-Math.max(0, state.altitude) / 8.5);
+            const drag = 0.0004 * densityFactor *
+                state.verticalVelocity * Math.abs(state.verticalVelocity);
+
+            state.verticalVelocity -= drag * dt;
+        }
+
+        state.altitude += state.verticalVelocity * dt / 1000;
+        state.missionTime += dt;
+
+        // Rocket equation fuel flow: mass flow = thrust / (Isp * g0).
+        const massFlowKgS = thrustN / Math.max(1, state.isp * CONFIG.G0);
+        state.fuel = Math.max(0, state.fuel - massFlowKgS * dt);
+        state.mass = state.dryMass + state.fuel;
+
+        if (state.fuel <= 0) {
+            state.ignition = false;
+            state.throttle = 0;
+            if ($("throttle")) $("throttle").value = "0";
+            showNotification("Fuel depleted. Engine shutdown.");
+        }
+
+        if (state.altitude < 0) {
+            state.altitude = 0;
+            state.verticalVelocity = 0;
+            state.ignition = false;
+            state.phase = "idle";
+            state.flightActive = false;
+            showEvent("FLIGHT ENDED");
+        }
+
+        // This is a simplified launch-to-orbit transition, not a
+        // complete Earth-centered orbital insertion calculation.
+        if (state.altitude >= 120 && state.phase === "launch") {
+            enterInterplanetaryPhase();
+        }
+
+        updateRocketVisual();
+        createSmokePuff();
+    }
+
+    function updateRocketVisual() {
+        if (!rocket) return;
+
+        const visualAltitude = state.altitude * 0.12;
+        rocket.position.set(
+            state.horizontalVelocity * 0.001,
+            2.1 + visualAltitude,
+            0
+        );
+
+        rocket.rotation.z = -state.pitch;
+        rocket.rotation.y = state.heading;
+
+        cameraTarget = rocket.position;
+    }
+
+    function enterInterplanetaryPhase() {
+        state.phase = "transfer";
+        state.ignition = false;
+        state.throttle = 0;
+
+        if ($("throttle")) $("throttle").value = "0";
+
+        // Map the launch vehicle to a heliocentric starting state.
+        // Planetary positions and the transfer trajectory are modeled
+        // with circular orbits, so this is an approximation.
+        const earthPos = getPlanetPositionKm("Earth");
+        const earthAngle = getPlanetAngle("Earth");
+
+        state.heliocentricPosition = earthPos.clone();
+        state.heliocentricPosition.y += CONFIG.EARTH_RADIUS_KM +
+            state.altitude;
+
+        const earthOrbitalSpeed = Math.sqrt(
+            CONFIG.SUN_MU / (PLANETS.Earth.a * CONFIG.AU_KM)
+        );
+
+        const tangent = new THREE.Vector3(
+            -Math.sin(earthAngle),
+            0,
+            Math.cos(earthAngle)
+        );
+
+        const radial = new THREE.Vector3(
+            Math.cos(earthAngle),
+            0,
+            Math.sin(earthAngle)
+        );
+
+        state.heliocentricVelocity = tangent.multiplyScalar(earthOrbitalSpeed)
+            .add(radial.multiplyScalar(state.horizontalVelocity / 1000))
+            .add(new THREE.Vector3(
+                0,
+                state.verticalVelocity / 1000,
+                0
+            ));
+
+        // After the transition, the rocket is rendered in the solar system.
+        launchGroup.visible = false;
+        solarSystemGroup.visible = true;
+
+        const rocketWorldPosition = mapHeliocentricToVisual(
+            state.heliocentricPosition
+        );
+
+        rocket.position.copy(rocketWorldPosition);
+        solarSystemGroup.add(rocket);
+
+        cameraTarget = rocket.position;
+        cameraDistance = 40;
+
+        showEvent("EARTH ASCENT COMPLETE — SOLAR TRANSFER PHASE");
+        showNotification(
+            "Spacecraft entered the simplified heliocentric simulation. Use throttle and attitude controls to maneuver."
+        );
+    }
+
+    function mapHeliocentricToVisual(positionKm) {
+        return new THREE.Vector3(
+            positionKm.x / CONFIG.AU_KM * CONFIG.AU_SCALE,
+            positionKm.y / CONFIG.AU_KM * CONFIG.AU_SCALE,
+            positionKm.z / CONFIG.AU_KM * CONFIG.AU_SCALE
+        );
+    }
+
+    function updateInterplanetaryPhysics(dt) {
+        if (!state.heliocentricPosition || !state.heliocentricVelocity) return;
+
+        state.missionTime += dt;
+
+        const targetName = state.destination;
+        const targetPos = targetName === "Moon"
+            ? getPlanetPositionKm("Earth")
+            : getPlanetPositionKm(targetName);
+
+        const position = state.heliocentricPosition;
+        const velocity = state.heliocentricVelocity;
+
+        // Gravity from the Sun plus simplified perturbations from planets.
+        const acceleration = new THREE.Vector3();
+        const sunDistance = Math.max(1e6, position.length());
+
+        acceleration.add(
+            position.clone().multiplyScalar(
+                -CONFIG.SUN_MU / Math.pow(sunDistance, 3)
+            )
+        );
+
+        for (const [name, data] of Object.entries(PLANETS)) {
+            const planetPos = getPlanetPositionKm(name);
+            const relative = planetPos.clone().sub(position);
+            const distance = Math.max(1000, relative.length());
+
+            acceleration.add(
+                relative.multiplyScalar(data.mu / Math.pow(distance, 3))
+            );
+        }
+
+        // Simplified powered guidance. The engine still has finite thrust
+        // and fuel, but this is not a Lambert/Hohmann transfer solver.
+        if (state.ignition && state.fuel > 0 && state.throttle > 0) {
+            const targetDirection = targetPos.clone().sub(position);
+
+            if (targetDirection.lengthSq() > 0) {
+                targetDirection.normalize();
+
+                const thrustN = state.thrust * 1000 *
+                    state.throttle / 100;
+
+                const mass = Math.max(1, state.dryMass + state.fuel);
+                const accelerationKmS2 = thrustN / mass / 1000;
+
+                acceleration.add(
+                    targetDirection.multiplyScalar(accelerationKmS2)
+                );
+
+                const flow = thrustN / Math.max(1, state.isp * CONFIG.G0);
+                state.fuel = Math.max(0, state.fuel - flow * dt);
+                state.mass = state.dryMass + state.fuel;
+
+                if (state.fuel <= 0) {
+                    state.ignition = false;
+                    state.throttle = 0;
+                    if ($("throttle")) $("throttle").value = "0";
+                    showNotification("Transfer fuel depleted.");
+                }
+            }
+        }
+
+        // Semi-implicit Euler integration with small time steps.
+        // Simulation speed changes the number of physical seconds advanced.
+        const simDt = dt * Math.max(1, state.speed);
+
+        let remaining = Math.min(simDt, 120);
+        while (remaining > 0) {
+            const step = Math.min(CONFIG.MAX_PHYSICS_STEP, remaining);
+            const r = Math.max(1e6, position.length());
+
+            const a = new THREE.Vector3().copy(position)
+                .multiplyScalar(-CONFIG.SUN_MU / Math.pow(r, 3));
+
+            for (const [name, data] of Object.entries(PLANETS)) {
+                const p = getPlanetPositionKm(name);
+                const rel = p.sub(position);
+                const d = Math.max(1000, rel.length());
+                a.add(rel.multiplyScalar(data.mu / Math.pow(d, 3)));
+            }
+
+            if (state.ignition && state.fuel > 0 && state.throttle > 0) {
+                const target = targetName === "Moon"
+                    ? getPlanetPositionKm("Earth")
+                    : getPlanetPositionKm(targetName);
+
+                const dir = target.sub(position);
+                if (dir.lengthSq() > 0) {
+                    dir.normalize();
+                    const thrustN = state.thrust * 1000 *
+                        state.throttle / 100;
+                    const mass = Math.max(1, state.dryMass + state.fuel);
+                    a.add(dir.multiplyScalar(thrustN / mass / 1000));
+                }
+            }
+
+            velocity.addScaledVector(a, step);
+            position.addScaledVector(velocity, step);
+
+            if (state.ignition && state.fuel > 0 && state.throttle > 0) {
+                const thrustN = state.thrust * 1000 *
+                    state.throttle / 100;
+                const flow = thrustN / Math.max(1, state.isp * CONFIG.G0);
+                state.fuel = Math.max(0, state.fuel - flow * step);
+                state.mass = state.dryMass + state.fuel;
+
+                if (state.fuel <= 0) {
+                    state.ignition = false;
+                    state.throttle = 0;
+                    if ($("throttle")) $("throttle").value = "0";
+                }
+            }
+
+            remaining -= step;
+        }
+
+        // Approximate arrival zone. This is not orbital insertion/capture.
+        if (targetName && targetName !== "Earth") {
+            const distanceKm = position.distanceTo(targetPos);
+            const arrivalRadius = targetName === "Moon" ? 80000 :
+                Math.max(500000, PLANETS[targetName].a * 100000);
+
+            if (distanceKm < arrivalRadius && !state.arrivalNotified) {
+                state.arrivalNotified = true;
+                state.phase = "arrived";
+                showEvent(`APPROACHING ${targetName.toUpperCase()}`);
+                showNotification(
+                    `Near ${targetName}. Capture into a stable orbit is not yet modeled.`
+                );
+            }
+        }
+
+        if (rocket) {
+            rocket.position.copy(mapHeliocentricToVisual(position));
+            rocket.rotation.y += state.heading * dt * 0.1;
+            cameraTarget = rocket.position;
+        }
+    }
+
+    // ----------------------------------------------------------
+    // 13. BOOSTERS AND SMOKE
+    // ----------------------------------------------------------
+
+    function updateDetachedBoosters(dt) {
+        for (const booster of boosterGroups) {
+            if (!booster.userData.separated) continue;
+
+            booster.position.addScaledVector(
+                booster.userData.velocity,
+                dt
+            );
+
+            booster.userData.velocity.y -= 9.81 * dt * 0.05;
+            booster.rotation.z += dt * 0.3;
+
+            if (booster.position.y < -30) {
+                launchGroup.remove(booster);
+                booster.userData.separated = false;
+            }
+        }
+    }
+
+    function createSmokePuff() {
+        if (!rocket || state.phase !== "launch" ||
+            !state.ignition || Math.random() > 0.35) return;
+
+        if (smokeParticles.length > 120) return;
+
+        const material = new THREE.MeshBasicMaterial({
+            color: 0x9aa7b7,
+            transparent: true,
+            opacity: 0.24,
+            depthWrite: false
+        });
+
+        const particle = new THREE.Mesh(
+            new THREE.SphereGeometry(0.4 + Math.random() * 0.5, 8, 8),
+            material
+        );
+
+        particle.position.copy(rocket.position);
+        particle.position.x += (Math.random() - 0.5) * 2;
+        particle.position.z += (Math.random() - 0.5) * 2;
+        particle.position.y -= 1.5;
+
+        particle.userData = {
+            age: 0,
+            lifetime: 2.0 + Math.random() * 2,
+            velocity: new THREE.Vector3(
+                (Math.random() - 0.5) * 1.2,
+                -0.3 - Math.random(),
+                (Math.random() - 0.5) * 1.2
+            )
+        };
+
+        launchGroup.add(particle);
+        smokeParticles.push(particle);
+    }
+
+    function updateSmoke(dt) {
+        for (let i = smokeParticles.length - 1; i >= 0; i--) {
+            const particle = smokeParticles[i];
+            const data = particle.userData;
+
+            data.age += dt;
+            particle.position.addScaledVector(data.velocity, dt);
+            particle.scale.multiplyScalar(1 + dt * 0.3);
+            particle.material.opacity = Math.max(
+                0,
+                0.24 * (1 - data.age / data.lifetime)
+            );
+
+            if (data.age >= data.lifetime) {
+                launchGroup.remove(particle);
+                particle.geometry.dispose();
+                particle.material.dispose();
+                smokeParticles.splice(i, 1);
+            }
+        }
+    }
+
+    function clearSmoke() {
+        for (const particle of smokeParticles) {
+            launchGroup.remove(particle);
+            particle.geometry.dispose();
+            particle.material.dispose();
+        }
+        smokeParticles.length = 0;
+    }
+
+    // ----------------------------------------------------------
+    // 14. TELEMETRY
+    // ----------------------------------------------------------
+
+    function updateTelemetry() {
+        setText("telemetry-altitude", `${fmt(state.altitude, 2)} km`);
+        setText(
+            "telemetry-velocity",
+            `${fmt(Math.hypot(state.verticalVelocity, state.horizontalVelocity), 1)} m/s`
+        );
+        setText("telemetry-vertical", `${fmt(state.verticalVelocity, 1)} m/s`);
+        setText("telemetry-throttle", `${Math.round(state.throttle)}%`);
+        setText("telemetry-fuel", `${fmt(state.fuel, 0)} kg`);
+        setText(
+            "telemetry-thrust",
+            `${fmt(state.ignition ? state.thrust * state.throttle / 100 : 0, 1)} kN`
+        );
+        setText("flight-stage", state.stage);
+
+        if (state.phase === "transfer" || state.phase === "arrived") {
+            const speed = state.heliocentricVelocity
+                ? state.heliocentricVelocity.length()
+                : 0;
+
+            setText("telemetry-apoapsis", "Solar trajectory");
+            setText("telemetry-periapsis", `${fmt(speed, 2)} km/s`);
+        } else {
+            setText("telemetry-apoapsis", "Approximate");
+            setText("telemetry-periapsis", "Approximate");
+        }
+
+        setText(
+            "simulation-status",
+            state.paused ? "PAUSED" :
+            state.flightActive ? state.phase.toUpperCase() :
+            "SYSTEM READY"
+        );
+    }
+
+    // ----------------------------------------------------------
+    // 15. CAMERA
+    // ----------------------------------------------------------
+
+    function onPointerDown(event) {
+        dragging = true;
+        dragStart = { x: event.clientX, y: event.clientY };
+        state.pointerDown = { x: event.clientX, y: event.clientY };
+        suppressClick = false;
+    }
+
+    function onPointerMove(event) {
+        if (!dragging || !dragStart) return;
+
+        const dx = event.clientX - dragStart.x;
+        const dy = event.clientY - dragStart.y;
+
+        if (Math.abs(dx) + Math.abs(dy) > 4) suppressClick = true;
+
+        cameraYaw -= dx * 0.005;
+        cameraPitch = clamp(cameraPitch + dy * 0.004, -1.25, 1.25);
+
+        dragStart = { x: event.clientX, y: event.clientY };
+        updateCamera();
+    }
+
+    function onPointerUp() {
+        dragging = false;
+        dragStart = null;
+    }
+
+    function onWheel(event) {
+        event.preventDefault();
+
+        cameraDistance = clamp(
+            cameraDistance * (event.deltaY > 0 ? 1.12 : 0.89),
+            8,
             3000
         );
-}
 
-
-/* =========================================================
-   TEXT HELPER
-   ========================================================= */
-
-function setText(
-    id,
-    value
-) {
-
-    const element =
-        document.getElementById(
-            id
-        );
-
-    if (element) {
-        element.textContent =
-            value;
-    }
-}
-
-
-/* =========================================================
-   RESIZE
-   ========================================================= */
-
-function handleResize() {
-
-    if (!camera || !renderer) {
-        return;
+        updateCamera();
     }
 
-    camera.aspect =
-        window.innerWidth /
-        window.innerHeight;
+    function updateCamera() {
+        if (!camera) return;
 
-    camera.updateProjectionMatrix();
+        let target = new THREE.Vector3(0, 0, 0);
 
-    renderer.setSize(
-        window.innerWidth,
-        window.innerHeight
-    );
-}
+        if (cameraTarget) {
+            if (cameraTarget.isVector3) {
+                target.copy(cameraTarget);
+            } else if (cameraTarget.getWorldPosition) {
+                cameraTarget.getWorldPosition(target);
+            } else if (cameraTarget.position) {
+                target.copy(cameraTarget.position);
+            }
+        }
 
+        const horizontal = cameraDistance * Math.cos(cameraPitch);
 
-/* =========================================================
-   MAIN ANIMATION LOOP
-   ========================================================= */
-
-function animate() {
-
-    requestAnimationFrame(
-        animate
-    );
-
-    const now =
-        performance.now();
-
-    const delta =
-        Math.min(
-            (now - lastTime) / 1000,
-            0.1
+        camera.position.set(
+            target.x + horizontal * Math.sin(cameraYaw),
+            target.y + cameraDistance * Math.sin(cameraPitch),
+            target.z + horizontal * Math.cos(cameraYaw)
         );
 
-    lastTime =
-        now;
-
-    updateSolarSystem(
-        delta
-    );
-
-    updateFlight(
-        delta
-    );
-
-    if (
-        renderer &&
-        scene &&
-        camera
-    ) {
-
-        renderer.render(
-            scene,
-            camera
-        );
+        camera.lookAt(target);
     }
-}
+
+    function onCanvasClick(event) {
+        if (suppressClick) {
+            suppressClick = false;
+            return;
+        }
+
+        if (state.activeSection === "flight" && state.phase !== "transfer") {
+            return;
+        }
+
+        const rect = renderer.domElement.getBoundingClientRect();
+
+        mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+        mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+        raycaster.setFromCamera(mouse, camera);
+
+        const targets = Array.from(celestialBodies.values());
+        const hits = raycaster.intersectObjects(targets, true);
+
+        if (!hits.length) return;
+
+        let object = hits[0].object;
+
+        while (object && !object.userData?.name && object.parent) {
+            object = object.parent;
+        }
+
+        if (object && object.userData && object.userData.name) {
+            selectPlanet(object.userData.name);
+            activateSection("planet-explorer");
+        }
+    }
+
+    // ----------------------------------------------------------
+    // 16. ATTITUDE AND KEYBOARD CONTROLS
+    // ----------------------------------------------------------
+
+    function applyAttitudeControl(control) {
+        if (!state.flightActive) return;
+
+        const adjustment = 0.08;
+
+        if (control === "left") state.heading -= adjustment;
+        if (control === "right") state.heading += adjustment;
+        if (control === "up") state.pitch = clamp(state.pitch + adjustment, -1.4, 1.4);
+        if (control === "down") state.pitch = clamp(state.pitch - adjustment, -1.4, 1.4);
+
+        if (rocket && state.phase === "launch") {
+            rocket.rotation.z = -state.pitch;
+            rocket.rotation.y = state.heading;
+        }
+    }
+
+    function onKeyDown(event) {
+        const target = event.target;
+        if (target && (
+            target.tagName === "INPUT" ||
+            target.tagName === "TEXTAREA" ||
+            target.isContentEditable
+        )) return;
+
+        switch (event.code) {
+            case "Space":
+                event.preventDefault();
+                toggleIgnition();
+                break;
+
+            case "KeyX":
+                stageRocket();
+                break;
+
+            case "KeyR":
+                state.rcs = !state.rcs;
+                showNotification(state.rcs ? "RCS enabled." : "RCS disabled.");
+                break;
+
+            case "KeyG":
+                state.landingGear = !state.landingGear;
+                showNotification(
+                    state.landingGear ? "Landing gear deployed." : "Landing gear retracted."
+                );
+                break;
+
+            case "KeyP":
+                togglePause();
+                break;
+
+            case "ArrowLeft":
+                applyAttitudeControl("left");
+                break;
+
+            case "ArrowRight":
+                applyAttitudeControl("right");
+                break;
+
+            case "ArrowUp":
+                applyAttitudeControl("up");
+                break;
+
+            case "ArrowDown":
+                applyAttitudeControl("down");
+                break;
+
+            default:
+                break;
+        }
+
+        const planetKeys = {
+            Digit1: "Mercury",
+            Digit2: "Venus",
+            Digit3: "Earth",
+            Digit4: "Mars",
+            Digit5: "Jupiter",
+            Digit6: "Saturn",
+            Digit7: "Uranus",
+            Digit8: "Neptune"
+        };
+
+        if (planetKeys[event.code]) {
+            selectPlanet(planetKeys[event.code]);
+            activateSection("planet-explorer");
+        }
+    }
+
+    // ----------------------------------------------------------
+    // 17. PAUSE AND SIMULATION CLOCK
+    // ----------------------------------------------------------
+
+    function togglePause() {
+        state.paused = !state.paused;
+
+        if (state.paused) {
+            state.previousSpeed = state.speed;
+            state.speed = 0;
+        } else {
+            state.speed = state.previousSpeed > 0 ? state.previousSpeed : 1;
+        }
+
+        updatePauseButton();
+    }
+
+    function updatePauseButton() {
+        setText("pause-button", state.paused ? "Resume" : "Pause");
+    }
+
+    function updateSimulation(dt) {
+        if (state.paused) return;
+
+        const speed = Math.max(0, state.speed);
+
+        if (state.phase !== "launch" && state.phase !== "orbit") {
+            state.simDays += dt * speed / 86400;
+        }
+
+        updatePlanetPositions();
+    }
+
+    // ----------------------------------------------------------
+    // 18. MESSAGES AND UTILITIES
+    // ----------------------------------------------------------
+
+    function setText(id, value) {
+        const element = $(id);
+        if (element) element.textContent = String(value);
+    }
+
+    function showNotification(message) {
+        const element = $("notification");
+        if (!element) return;
+
+        element.textContent = message;
+        element.hidden = false;
+        element.classList.add("visible");
+
+        if (notificationTimeout !== null) {
+            clearTimeout(notificationTimeout);
+        }
+
+        notificationTimeout = window.setTimeout(() => {
+            element.classList.remove("visible");
+            element.hidden = true;
+        }, 3500);
+    }
+
+    function showEvent(message) {
+        const element = $("event-message");
+        if (!element) return;
+
+        element.textContent = message;
+        element.hidden = false;
+
+        window.setTimeout(() => {
+            if (element.textContent === message) element.hidden = true;
+        }, 4500);
+    }
+
+    function resizeRenderer() {
+        const container = $("three-container");
+        if (!container || !renderer || !camera) return;
+
+        const width = Math.max(1, container.clientWidth);
+        const height = Math.max(1, container.clientHeight);
+
+        renderer.setSize(width, height);
+        camera.aspect = width / height;
+        camera.updateProjectionMatrix();
+    }
+
+    // ----------------------------------------------------------
+    // 19. MAIN ANIMATION LOOP
+    // ----------------------------------------------------------
+
+    function animate(now) {
+        requestAnimationFrame(animate);
+
+        if (!state.ready || !renderer || !scene || !camera) return;
+
+        let dt = (now - lastFrame) / 1000;
+        lastFrame = now;
+
+        if (!Number.isFinite(dt) || dt < 0) dt = 0;
+        dt = Math.min(dt, CONFIG.MAX_FRAME_DT);
+
+        if (!state.paused) {
+            const physicsDt = dt * Math.max(0, state.speed);
+
+            // Keep the launch phase stable at very high simulation speeds.
+            if (state.flightActive && state.speed > 0) {
+                let remaining = Math.min(physicsDt, 2);
+                while (remaining > 0) {
+                    const step = Math.min(0.02, remaining);
+                    updateFlight(step);
+                    remaining -= step;
+                }
+            }
+
+            updateSimulation(dt);
+
+            if (rocket && state.ignition && mainFlame) {
+                mainFlame.scale.x = 0.85 + Math.random() * 0.3;
+                mainFlame.scale.z = 0.85 + Math.random() * 0.3;
+                mainFlame.scale.y = 0.8 + Math.random() * 0.4;
+            }
+
+            if (launchGroup.visible && state.phase === "launch") {
+                // Camera tracks the rocket while retaining user zoom.
+                cameraTarget = rocket ? rocket.position : cameraTarget;
+            }
+        }
+
+        updateCamera();
+        renderer.render(scene, camera);
+    }
+})();
